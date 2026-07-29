@@ -27,23 +27,111 @@ import Ornament from "./Ornament.astro";
     document.getElementById("a-no")?.classList.toggle("on", !v);
   }
 
+  function celebrateAttendance() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const stage = document.getElementById("frame");
+    if (!stage) return;
+
+    const previous = stage.querySelector(".celebration-canvas");
+    previous?.remove();
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "celebration-canvas";
+    canvas.setAttribute("aria-hidden", "true");
+    stage.appendChild(canvas);
+
+    const width = stage.clientWidth;
+    const height = stage.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    const context = canvas.getContext("2d");
+    if (!context) { canvas.remove(); return; }
+    context.scale(dpr, dpr);
+
+    const colors = ["#b8965a", "#d9bd7a", "#f0dfb6", "#9ba589", "#fffaf0"];
+    const particles = Array.from({ length: 150 }, (_, index) => {
+      const direction = index % 2 === 0 ? 1 : -1;
+      return {
+        x: direction === 1 ? width * 0.1 : width * 0.9,
+        y: height * (0.78 + Math.random() * 0.12),
+        vx: direction * (1.5 + Math.random() * 4.5) + (Math.random() - 0.5),
+        vy: -(3.8 + Math.random() * 7.2),
+        gravity: 0.07 + Math.random() * 0.055,
+        drag: 0.986 + Math.random() * 0.008,
+        rotation: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.24,
+        size: 2.2 + Math.random() * 4.8,
+        life: 92 + Math.random() * 62,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        sparkle: Math.random() < 0.34,
+      };
+    });
+
+    function drawSparkle(size: number) {
+      context!.beginPath();
+      context!.moveTo(0, -size);
+      context!.lineTo(size * 0.28, -size * 0.28);
+      context!.lineTo(size, 0);
+      context!.lineTo(size * 0.28, size * 0.28);
+      context!.lineTo(0, size);
+      context!.lineTo(-size * 0.28, size * 0.28);
+      context!.lineTo(-size, 0);
+      context!.lineTo(-size * 0.28, -size * 0.28);
+      context!.closePath();
+      context!.fill();
+    }
+
+    function animate() {
+      context!.clearRect(0, 0, width, height);
+      let active = false;
+      particles.forEach((particle) => {
+        if (particle.life <= 0 || particle.y > height + 30) return;
+        active = true;
+        particle.life -= 1;
+        particle.vx *= particle.drag;
+        particle.vy += particle.gravity;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.rotation += particle.spin;
+
+        context!.save();
+        context!.translate(particle.x, particle.y);
+        context!.rotate(particle.rotation);
+        context!.globalAlpha = Math.min(1, particle.life / 24);
+        context!.fillStyle = particle.color;
+        if (particle.sparkle) drawSparkle(particle.size);
+        else context!.fillRect(-particle.size * 0.55, -particle.size * 0.22, particle.size * 1.1, particle.size * 0.44);
+        context!.restore();
+      });
+
+      if (active) window.requestAnimationFrame(animate);
+      else canvas.remove();
+    }
+
+    window.requestAnimationFrame(animate);
+    window.setTimeout(() => canvas.remove(), 3600);
+  }
+
   async function submit() {
     const guest = state.guest;
     const token = getToken();
+    const attending = pickAsiste;
     const sel = document.getElementById("f-pases") as HTMLSelectElement | null;
-    const pases = pickAsiste ? Number(sel?.value) || 0 : 0;
-    if (pickAsiste && !pases) { toast("Selecciona el número de pases"); return; }
+    const pases = attending ? Number(sel?.value) || 0 : 0;
+    if (attending && !pases) { toast("Selecciona el número de pases"); return; }
     const tel = (document.getElementById("f-tel") as HTMLInputElement | null)?.value || "";
     toast("Enviando...");
     try {
-      const r = await submitRsvp(token, pickAsiste, pases, tel.trim());
+      const r = await submitRsvp(token, attending, pases, tel.trim());
       if (r && r.ok) {
         guest.confirmado = true;
-        guest.asiste = pickAsiste;
+        guest.asiste = attending;
         guest.pases_confirmados = r.pases;
         render();
         document.body.dispatchEvent(new CustomEvent("rsvp:done"));
-        toast(pickAsiste ? "¡Confirmado! Gracias" : "Registrado, gracias");
+        if (attending) window.setTimeout(celebrateAttendance, 120);
+        toast(attending ? "¡Confirmado! Gracias" : "Registrado, gracias");
       } else toast("No se pudo guardar, intenta de nuevo");
     } catch (e) {
       toast("Sin conexión, intenta de nuevo");
@@ -140,6 +228,14 @@ import Ornament from "./Ornament.astro";
     color: #87662f;
     font-weight: 500;
     box-shadow: 0 10px 24px -20px rgba(74, 65, 54, 0.75);
+  }
+  #frame .celebration-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 175;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
 </style>
 <!-- El contador regresivo vive únicamente en Countdown.astro para evitar duplicados. -->

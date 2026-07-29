@@ -6,8 +6,8 @@ export const PLAYLIST = "https://open.spotify.com/playlist/0has6wxcG7Q929c25X4qo
 export const SPOTIFY_EMBED =
   "https://open.spotify.com/embed/playlist/0has6wxcG7Q929c25X4qoe?utm_source=generator&theme=0";
 
-// Se activará al agregar el archivo elegido a /public y colocar aquí su ruta.
-export const WEDDING_AUDIO = "";
+// Música que comienza al tocar el sobre.
+export const WEDDING_AUDIO = "/a-thousand-years-piano-cello.mp3";
 
 // Ubicación del evento para el pronóstico automático.
 export const WEATHER_LOCATION = {
