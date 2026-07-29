@@ -8,7 +8,7 @@ import SectionTitle from "./SectionTitle.astro";
 </div>
 
 <script>
-  import { boot, daysLeft, esc, countdownParts } from "../lib/state";
+  import { boot, loadGuest, daysLeft, esc, countdownParts } from "../lib/state";
   import { getToken } from "../lib/config";
   import { icon } from "../lib/icons";
 
@@ -59,6 +59,7 @@ import SectionTitle from "./SectionTitle.astro";
     el.innerHTML = h;
   }
 
+  loadGuest().then((s) => { state = s; render(); });
   boot().then((s) => { state = s; render(); });
   document.body.addEventListener("rsvp:done", render);
   setInterval(() => { const c = el?.querySelector(".countdown"); if (c) c.innerHTML = cdHTML(); }, 1000);

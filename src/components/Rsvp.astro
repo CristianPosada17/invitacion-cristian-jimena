@@ -3,12 +3,17 @@ import Ornament from "./Ornament.astro";
 ---
 <div class="wrap">
   <Ornament />
-  <div id="rsvp-box"></div>
+  <div id="rsvp-box">
+    <div class="card center">
+      <h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">Buscando tu invitación</h3>
+      <p class="hint">Estamos cargando tus datos personalizados…</p>
+    </div>
+  </div>
   <div style="height:20px"></div>
 </div>
 
 <script>
-  import { boot, esc, toast } from "../lib/state";
+  import { loadGuest, esc, toast } from "../lib/state";
   import { getToken } from "../lib/config";
   import { submitRsvp } from "../lib/api";
 
@@ -54,6 +59,12 @@ import Ornament from "./Ornament.astro";
         '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">Confirma tu Asistencia</h3><p class="hint">Abre tu invitación desde el <b>link personalizado</b> que te enviamos por WhatsApp para poder confirmar.</p></div>';
       return;
     }
+    if (state?.guestStatus === "error") {
+      box.innerHTML =
+        '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">No pudimos cargar tu invitación</h3><p class="hint">Revisa tu conexión e inténtalo nuevamente.</p><button class="btn ghost mt" id="retryGuest">Volver a intentar</button></div>';
+      document.getElementById("retryGuest")?.addEventListener("click", () => window.location.reload());
+      return;
+    }
     if (!guest) {
       box.innerHTML =
         '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">No encontramos tu invitación</h3><p class="hint">Verifica que abriste el link completo que te enviamos, o escríbenos por WhatsApp.</p></div>';
@@ -91,6 +102,8 @@ import Ornament from "./Ornament.astro";
     document.getElementById("btnRsvp")?.addEventListener("click", submit);
   }
 
-  boot().then((s) => { state = s; render(); });
+  loadGuest()
+    .then((s) => { state = s; render(); })
+    .catch(() => { state = { guestStatus: "error" }; render(); });
 </script>
 <!-- El contador regresivo vive únicamente en Countdown.astro para evitar duplicados. -->

@@ -19,31 +19,47 @@ export interface AppState {
   config: Record<string, any>;
   photos: any[];
   guest: Guest | null;
+  guestStatus: "none" | "found" | "not-found" | "error";
   revealDays: number;
 }
 
 let _p: Promise<AppState> | null = null;
+let _guestP: Promise<Pick<AppState, "guest" | "guestStatus">> | null = null;
+
+function withTimeout<T>(promise: Promise<T>, milliseconds: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("La solicitud tardó demasiado")), milliseconds);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); }
+    );
+  });
+}
+
+export function loadGuest(): Promise<Pick<AppState, "guest" | "guestStatus">> {
+  if (_guestP) return _guestP;
+  const token = getToken();
+  if (!token) {
+    _guestP = Promise.resolve({ guest: null, guestStatus: "none" });
+    return _guestP;
+  }
+  _guestP = withTimeout(getGuest(token), 30000)
+    .then((g) => g && g.found
+      ? { guest: g as Guest, guestStatus: "found" as const }
+      : { guest: null, guestStatus: "not-found" as const })
+    .catch(() => ({ guest: null, guestStatus: "error" as const }));
+  return _guestP;
+}
 
 export function boot(): Promise<AppState> {
   if (_p) return _p;
   _p = (async () => {
-    let config: Record<string, any> = {};
-    let photos: any[] = [];
-    try {
-      const b = await getBootstrap();
-      config = b.config || {};
-      photos = b.photos || [];
-    } catch (e) {}
-    let guest: Guest | null = null;
-    const t = getToken();
-    if (t) {
-      try {
-        const g = await getGuest(t);
-        if (g && g.found) guest = g;
-      } catch (e) {}
-    }
+    const bootstrapPromise = withTimeout(getBootstrap(), 12000).catch(() => null);
+    const [bootstrap, guestState] = await Promise.all([bootstrapPromise, loadGuest()]);
+    const config = bootstrap?.config || {};
+    const photos = bootstrap?.photos || [];
     const revealDays = config.reveal_days ? Number(config.reveal_days) : REVEAL_DAYS_DEFAULT;
-    return { config, photos, guest, revealDays };
+    return { config, photos, ...guestState, revealDays };
   })();
   return _p;
 }
