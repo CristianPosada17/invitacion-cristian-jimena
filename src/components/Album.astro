@@ -1,0 +1,83 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+import { icon } from "../lib/icons";
+---
+<div class="wrap" style="padding-bottom:14px">
+  <SectionTitle title="Álbum de Invitados" sub="Comparte las fotografías que tomes durante la celebración" />
+</div>
+<div id="album"></div>
+<div class="wrap" style="padding-top:16px">
+  <button class="btn dark" id="btnUpload"><span set:html={icon("upload")}></span>Subir mis fotos</button>
+  <input type="file" id="photoInput" accept="image/*" capture="environment" multiple hidden />
+  <div style="height:24px"></div>
+  <div class="thanks">
+    <div class="g">Gracias</div>
+    <div style="letter-spacing:3px;font-size:12px;text-transform:uppercase;margin:8px 0">Por ser parte de<br />nuestra gran historia</div>
+    <div class="hint" style="color:#c9bfa9">Con amor,</div>
+    <div style="font-family:var(--font-script);font-size:34px;color:#f1e7d2">Cristian & Jimena</div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<script>
+  import { boot, toast, esc } from "../lib/state";
+  import { getToken } from "../lib/config";
+  import { savePhoto, getPhotos } from "../lib/api";
+  import { icon } from "../lib/icons";
+
+  const g = document.getElementById("album");
+  let guestName = "Invitado";
+
+  function render(list: any[]) {
+    if (!g) return;
+    if (!list || !list.length) {
+      g.className = "";
+      g.innerHTML =
+        '<div class="emptybox"><div class="ic">' + icon("image") +
+        "</div><p>Aún no hay fotos.<br>Sé el primero en compartir un recuerdo.</p></div>";
+      return;
+    }
+    g.className = "gal";
+    g.innerHTML = list
+      .map((p) => '<figure><img loading="lazy" src="' + esc(p.url) + '"><figcaption>' + esc(p.autor || "Invitado") + "</figcaption></figure>")
+      .join("");
+  }
+
+  function downscale(file: File): Promise<string> {
+    return new Promise((res) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const max = 1600;
+        let w = img.width, h = img.height;
+        if (w > max || h > max) {
+          if (w > h) { h = Math.round((h * max) / w); w = max; }
+          else { w = Math.round((w * max) / h); h = max; }
+        }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = () => { const r = new FileReader(); r.onload = () => res(r.result as string); r.readAsDataURL(file); };
+      img.src = url;
+    });
+  }
+
+  document.getElementById("btnUpload")?.addEventListener("click", () => document.getElementById("photoInput")?.click());
+  document.getElementById("photoInput")?.addEventListener("change", async (e) => {
+    const inp = e.target as HTMLInputElement;
+    const files = Array.from(inp.files || []);
+    inp.value = "";
+    if (!files.length) return;
+    toast("Subiendo " + files.length + " foto(s)...");
+    for (const f of files) {
+      try { const d = await downscale(f); await savePhoto(getToken(), guestName, f.name, d); } catch (err) {}
+    }
+    try { const ph = await getPhotos(); render(ph || []); } catch (e2) {}
+    toast("¡Gracias por compartir!");
+  });
+
+  boot().then((s) => { if (s.guest?.nombre) guestName = s.guest.nombre; render(s.photos || []); });
+</script>

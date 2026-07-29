@@ -1,0 +1,39 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+const fotos = [
+  { src: "/galeria/foto-4.jpg", alt: "Cristian y Jimena celebrando su compromiso" },
+  { src: "/galeria/foto-5.jpg", alt: "El anillo de compromiso de Jimena" },
+  { src: "/galeria/foto-7.jpg", alt: "Cristian y Jimena juntos" },
+  { src: "/galeria/foto-2.jpg", alt: "Cristian y Jimena entre luces de celebración" },
+];
+---
+<div style="padding:34px 0 0">
+  <SectionTitle title="Nuestra Historia" />
+  <div class="carousel mt" aria-label="Momentos de Cristian y Jimena">
+    {fotos.map((foto) => (
+      <img class="story-photo" src={foto.src} alt={foto.alt} loading="lazy" decoding="async" />
+    ))}
+  </div>
+  <p class="story-hint">Desliza para ver más momentos</p>
+</div>
+
+<style>
+  .story-photo {
+    flex: 0 0 68%;
+    width: 68%;
+    height: 238px;
+    border-radius: 16px;
+    border: 1px solid var(--color-line);
+    object-fit: cover;
+    object-position: center;
+    scroll-snap-align: center;
+  }
+  .story-hint {
+    margin: 11px 0 0;
+    color: var(--color-soft);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+</style>

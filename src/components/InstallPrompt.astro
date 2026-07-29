@@ -1,0 +1,70 @@
+---
+// Pop-up para "instalar" la invitación como app (PWA)
+---
+<div id="installPrompt">
+  <img src="/logo-cj.png" alt="C&J" />
+  <div class="txt">
+    <b>Instala la invitación</b>
+    <span id="installMsg">Ábrela como app, se ve mucho mejor</span>
+  </div>
+  <div class="actions">
+    <button class="close" id="installClose">Ahora no</button>
+    <button class="go" id="installGo">Instalar</button>
+  </div>
+</div>
+
+<script>
+  // Service worker: en DESARROLLO (localhost) lo desactivamos y limpiamos caché
+  // para no servir versiones viejas. En PRODUCCIÓN sí se registra (para instalar).
+  const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (isLocal) {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));
+    }
+    if (window.caches) caches.keys().then((ks) => ks.forEach((k) => caches.delete(k)));
+  } else if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  }
+
+  const promptEl = document.getElementById("installPrompt");
+  const goBtn = document.getElementById("installGo");
+  const closeBtn = document.getElementById("installClose");
+  const msg = document.getElementById("installMsg");
+  let deferred: any = null;
+
+  const dismissed = localStorage.getItem("pwa-dismissed") === "1";
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+
+  function show() { if (!dismissed && !standalone) promptEl?.classList.add("show"); }
+  function hide() { promptEl?.classList.remove("show"); }
+
+  closeBtn?.addEventListener("click", () => { hide(); localStorage.setItem("pwa-dismissed", "1"); });
+
+  // Android / Chrome / Edge: evento nativo de instalación
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferred = e;
+    setTimeout(show, 1400);
+  });
+  goBtn?.addEventListener("click", async () => {
+    if (deferred) {
+      deferred.prompt();
+      const res = await deferred.userChoice;
+      deferred = null;
+      hide();
+      if (res && res.outcome === "accepted") localStorage.setItem("pwa-dismissed", "1");
+    }
+  });
+
+  // iOS / Safari: no hay instalación programática → mostrar instrucciones
+  const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isiOS && !standalone) {
+    if (goBtn) goBtn.textContent = "Ver cómo";
+    if (msg) msg.textContent = 'Agrégala a tu pantalla de inicio';
+    goBtn?.addEventListener("click", () => {
+      if (msg) msg.textContent = "En Safari: toca Compartir ⬆ y luego “Agregar a inicio”";
+    });
+    setTimeout(show, 1600);
+  }
+</script>

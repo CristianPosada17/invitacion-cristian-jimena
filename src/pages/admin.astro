@@ -1,0 +1,221 @@
+---
+import AdminLayout from "../layouts/AdminLayout.astro";
+---
+<AdminLayout>
+  <div class="admin-wrap">
+    <!-- Acceso -->
+    <div id="gate" class="gate">
+      <img src="/logo-cj.png" alt="C&J" style="width:80px;margin:0 auto 12px" />
+      <h1 style="font-family:var(--font-serif);font-size:26px">Panel de organizadores</h1>
+      <p style="color:var(--color-soft);font-size:13px;margin:6px 0 16px">Ingresa la contraseña</p>
+      <input id="pass" class="a-input" type="password" placeholder="Contraseña" />
+      <div id="err" style="color:#a5604f;font-size:12px;margin-top:8px;display:none">Contraseña incorrecta</div>
+      <button id="enter" class="a-btn" style="width:100%;margin-top:14px">Entrar</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dash" style="display:none">
+      <div class="a-head">
+        <div class="eyebrow">Cristian & Jimena · 03.04.2027</div>
+        <h1>Panel de organizadores</h1>
+      </div>
+
+      <div class="a-stats" id="stats"></div>
+
+      <div class="a-panel">
+        <h2>Invitados y enlaces personalizados</h2>
+        <div class="link-info">
+          <div>
+            <b>Los enlaces se generan automáticamente desde esta lista.</b>
+            <p>Google Sheets no se modifica. Termina de depurar los nombres antes de enviar los enlaces: si cambia el nombre o los apellidos, también cambiará su enlace.</p>
+          </div>
+          <div class="link-origin"><span>Dominio actual</span><code id="linkOrigin"></code></div>
+        </div>
+        <div class="a-toolbar">
+          <input id="search" class="a-input" placeholder="Buscar invitado..." aria-label="Buscar invitado" />
+          <button id="copyAllLinks" class="a-btn a-secondary">Copiar todos</button>
+          <button id="downloadLinks" class="a-btn a-secondary">Descargar CSV</button>
+        </div>
+        <p id="linkFeedback" class="link-feedback" aria-live="polite"></p>
+        <div class="a-scroll">
+          <table class="a-table">
+            <thead>
+              <tr><th>Nombre</th><th>Estado</th><th>Pases</th><th>Mesa</th><th>Link personalizado</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="a-panel">
+        <h2>Álbum de fotos</h2>
+        <div class="a-photos" id="photos"></div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { adminList, adminDeletePhoto } from "../lib/api";
+  import { esc } from "../lib/state";
+
+  const $ = (id: string) => document.getElementById(id)!;
+  let PASS = "";
+  let data: any = null;
+
+  async function enter() {
+    const p = ($("pass") as HTMLInputElement).value.trim();
+    if (!p) return;
+    ($("enter") as HTMLButtonElement).textContent = "...";
+    const r = await adminList(p).catch(() => ({ ok: false }));
+    if (r && r.ok) {
+      PASS = p;
+      sessionStorage.setItem("adminpass", p);
+      data = r;
+      $("gate").style.display = "none";
+      $("dash").style.display = "block";
+      render();
+    } else {
+      $("err").style.display = "block";
+      ($("enter") as HTMLButtonElement).textContent = "Entrar";
+    }
+  }
+
+  function estadoTag(e: string) {
+    if (e === "asiste") return '<span class="tag yes">Asiste</span>';
+    if (e === "no") return '<span class="tag no">No asiste</span>';
+    return '<span class="tag pend">Pendiente</span>';
+  }
+
+  function displayName(g: any) {
+    return [g.prot, g.nombre].filter(Boolean).join(" ");
+  }
+
+  function guestUrl(g: any) {
+    return `${location.origin}/?g=${encodeURIComponent(g.token)}`;
+  }
+
+  function setFeedback(message: string, error = false) {
+    const el = $("linkFeedback");
+    el.textContent = message;
+    el.classList.toggle("error", error);
+  }
+
+  async function copyText(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch (e) {
+      try {
+        const area = document.createElement("textarea");
+        area.value = value;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        const copied = document.execCommand("copy");
+        area.remove();
+        return copied;
+      } catch (e2) {
+        return false;
+      }
+    }
+  }
+
+  function csvCell(value: any) {
+    return `"${String(value ?? "").replace(/"/g, '""')}"`;
+  }
+
+  function renderRows(filter: string) {
+    const f = filter.toLowerCase();
+    const rows = (data.guests || []).filter((g: any) => g.nombre.toLowerCase().includes(f));
+    $("rows").innerHTML = rows
+      .map(
+        (g: any) => {
+          const url = guestUrl(g);
+          return `<tr><td>${esc(displayName(g))}</td><td>${estadoTag(g.estado)}</td>` +
+            `<td>${g.estado === "asiste" ? g.total || g.max : "—"}/${g.max}</td><td>${esc(g.mesa || "—")}</td>` +
+            `<td><div class="link-cell"><code class="link-url">${esc(url)}</code><div class="link-actions">` +
+            `<button class="a-link" data-copy-link="${esc(url)}">Copiar</button>` +
+            `<a class="a-link a-open" href="${esc(url)}" target="_blank" rel="noopener">Abrir y probar</a>` +
+            `</div></div></td></tr>`;
+        }
+      )
+      .join("");
+    document.querySelectorAll("[data-copy-link]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const button = b as HTMLButtonElement;
+        const url = button.dataset.copyLink!;
+        const copied = await copyText(url);
+        button.textContent = copied ? "¡Copiado!" : "No se pudo copiar";
+        setFeedback(copied ? "Enlace copiado. Ya puedes pegarlo en WhatsApp." : "No se pudo copiar; abre el enlace y cópialo desde el navegador.", !copied);
+        setTimeout(() => (button.textContent = "Copiar"), 1400);
+      })
+    );
+  }
+
+  async function copyAllLinks() {
+    const guests = data?.guests || [];
+    if (!guests.length) return;
+    const list = guests.map((g: any) => `${displayName(g)} — ${guestUrl(g)}`).join("\n");
+    const copied = await copyText(list);
+    setFeedback(copied ? `${guests.length} enlaces copiados.` : "No se pudo copiar la lista completa.", !copied);
+  }
+
+  function downloadLinks() {
+    const guests = data?.guests || [];
+    if (!guests.length) return;
+    const rows = [
+      ["Invitado", "Pases asignados", "Estado", "Link personalizado"],
+      ...guests.map((g: any) => [displayName(g), g.max, g.estado, guestUrl(g)]),
+    ];
+    const csv = "\uFEFF" + rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "enlaces-invitados.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setFeedback(`${guests.length} enlaces descargados en CSV.`);
+  }
+
+  function render() {
+    const s = data.stats || {};
+    $("linkOrigin").textContent = location.origin;
+    $("stats").innerHTML = [
+      ["Confirmados", s.confirmados],
+      ["Pases", s.pases],
+      ["Pendientes", s.pendientes],
+      ["Total", s.total],
+    ]
+      .map((x) => `<div class="a-stat"><b>${x[1] ?? 0}</b><span>${x[0]}</span></div>`)
+      .join("");
+
+    renderRows(($("search") as HTMLInputElement).value || "");
+
+    const ph = data.photos || [];
+    $("photos").innerHTML = ph.length
+      ? ph.map((p: any) => `<div class="a-photo"><img src="${p.url}"><button data-del="${p.id}">Borrar</button></div>`).join("")
+      : '<p style="color:var(--color-soft)">Sin fotos aún.</p>';
+    document.querySelectorAll("[data-del]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const id = (b as HTMLElement).dataset.del!;
+        if (!confirm("¿Borrar esta foto?")) return;
+        await adminDeletePhoto(PASS, id);
+        data.photos = (data.photos || []).filter((x: any) => x.id !== id);
+        render();
+      })
+    );
+  }
+
+  $("enter").addEventListener("click", enter);
+  $("pass").addEventListener("keydown", (e) => { if ((e as KeyboardEvent).key === "Enter") enter(); });
+  $("search").addEventListener("input", (e) => { if (data) renderRows((e.target as HTMLInputElement).value); });
+  $("copyAllLinks").addEventListener("click", copyAllLinks);
+  $("downloadLinks").addEventListener("click", downloadLinks);
+
+  const saved = sessionStorage.getItem("adminpass");
+  if (saved) { ($("pass") as HTMLInputElement).value = saved; enter(); }
+</script>

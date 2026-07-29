@@ -1,0 +1,20 @@
+---
+// Contador regresivo en vivo hasta la boda
+---
+<div class="wrap center" style="padding-top:30px">
+  <div class="countdown" id="cd-inicio"></div>
+  <p class="hint">para el gran día</p>
+</div>
+
+<script>
+  import { countdownParts } from "../lib/state";
+  function render() {
+    const el = document.getElementById("cd-inicio");
+    if (!el) return;
+    el.innerHTML = countdownParts()
+      .map((p) => `<div class="cd"><b>${p[1]}</b><span>${p[0]}</span></div>`)
+      .join("");
+  }
+  render();
+  setInterval(render, 1000);
+</script>

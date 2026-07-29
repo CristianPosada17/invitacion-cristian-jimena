@@ -1,0 +1,8 @@
+---
+import Ornament from "./Ornament.astro";
+interface Props { title: string; sub?: string; }
+const { title, sub } = Astro.props;
+---
+<Ornament />
+<div class={`sec-title ${sub ? "" : "mb"}`}>{title}</div>
+{sub && <div class="sec-sub mb">{sub}</div>}

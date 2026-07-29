@@ -1,0 +1,37 @@
+---
+// Barra inferior · navegación multi-página (cada botón es una página distinta).
+// Conserva el link personalizado (?g=token) al cambiar de página.
+interface Props { active?: string; }
+const { active = "inicio" } = Astro.props;
+
+const items = [
+  { id: "inicio", label: "Inicio", href: "/", path: '<path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/>' },
+  { id: "detalles", label: "Detalles", href: "/detalles", path: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 4v-1M16 4v-1M4 9h16"/>' },
+  { id: "galeria", label: "Galería", href: "/galeria", path: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><path d="M4 18l5-4 4 3 3-2 5 4"/>' },
+  { id: "album", label: "Álbum", href: "/album", path: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/>' },
+  { id: "mas", label: "Más", href: "/mas", path: '<path d="M4 7h16M4 12h16M4 17h16"/>' },
+];
+---
+<div id="nav">
+  {items.map((it) => (
+    <a href={it.href} class={active === it.id ? "on" : ""} aria-label={it.label}>
+      <svg viewBox="0 0 24 24" fill="none" set:html={it.path}></svg>
+      {it.label}
+    </a>
+  ))}
+</div>
+
+<script>
+  import { getToken } from "../lib/config";
+  const t = getToken();
+  if (t) {
+    document.querySelectorAll("#nav a").forEach((a) => {
+      try {
+        const el = a as HTMLAnchorElement;
+        const u = new URL(el.href);
+        u.searchParams.set("g", t);
+        el.href = u.toString();
+      } catch (e) {}
+    });
+  }
+</script>

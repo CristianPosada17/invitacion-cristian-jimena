@@ -1,0 +1,49 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+import { icon } from "../lib/icons";
+---
+<div class="wrap">
+  <SectionTitle title="Ubicaciones" />
+  <div class="card">
+    <div class="dcard" style="padding-bottom:14px">
+      <div class="ic" set:html={icon("church")}></div>
+      <div class="tx"><b>Templo de Fátima</b><span>Ceremonia religiosa · 5:00 PM</span></div>
+    </div>
+    <button class="btn ghost" data-maps="Templo de Fatima"><span set:html={icon("pin")}></span>Ver en el mapa</button>
+  </div>
+  <div class="card">
+    <div class="dcard" style="padding-bottom:14px">
+      <div class="ic" set:html={icon("cheers")}></div>
+      <div class="tx"><b>Salón Casa Meraki</b><span>Civil y recepción · 8:00 PM</span></div>
+    </div>
+    <button class="btn ghost" data-maps="Salon Casa Meraki"><span set:html={icon("pin")}></span>Ver en el mapa</button>
+  </div>
+
+  <!-- Croquis / mapa del salón (para quienes no usan Google Maps) -->
+  <div class="card" id="croquisCard">
+    <div class="eyebrow mb">Croquis · Cómo llegar</div>
+    <img id="croquisImg" alt="Croquis del salón" style="width:100%;border-radius:10px;display:none" />
+    <div id="croquisPh" class="locked" style="margin:0">El croquis del salón estará disponible pronto</div>
+  </div>
+</div>
+
+<script>
+  import { boot } from "../lib/state";
+
+  document.querySelectorAll("[data-maps]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const q = (b as HTMLElement).dataset.maps || "";
+      window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q), "_blank");
+    })
+  );
+
+  boot().then((s) => {
+    const url = s.config?.croquis_url;
+    if (url) {
+      const img = document.getElementById("croquisImg") as HTMLImageElement | null;
+      const ph = document.getElementById("croquisPh");
+      if (img) { img.src = url; img.style.display = "block"; }
+      if (ph) ph.style.display = "none";
+    }
+  });
+</script>

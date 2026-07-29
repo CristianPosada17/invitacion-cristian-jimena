@@ -1,0 +1,29 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+import { icon } from "../lib/icons";
+import { SPOTIFY_EMBED } from "../lib/config";
+---
+<div class="wrap">
+  <SectionTitle title="Música" sub="Comparte tus canciones favoritas" />
+  <div class="spotify-wrap mb">
+    <iframe
+      style="border-radius:14px"
+      src={SPOTIFY_EMBED}
+      width="100%"
+      height="352"
+      frameborder="0"
+      allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture"
+      loading="lazy"
+    ></iframe>
+  </div>
+  <button class="btn sage" id="btnPlaylist"><span set:html={icon("plus")}></span>Agregar canción</button>
+  <p class="hint center mt">
+    Abre nuestra playlist colaborativa y agrega las canciones que te gustaría escuchar durante la
+    celebración. Las compartiremos con el DJ.
+  </p>
+</div>
+
+<script>
+  import { PLAYLIST } from "../lib/config";
+  document.getElementById("btnPlaylist")?.addEventListener("click", () => window.open(PLAYLIST, "_blank"));
+</script>

@@ -1,0 +1,31 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+import { icon } from "../lib/icons";
+---
+<div class="wrap">
+  <SectionTitle title="Detalles del Evento" />
+  <div class="ecard"><div class="e">Fecha</div><div class="ln"></div><h3>3 de Abril de 2027</h3><div class="s">SÁBADO</div></div>
+  <div class="ecard"><div class="e">Ceremonia Religiosa</div><div class="ln"></div><h3>Templo de Fátima</h3><div class="s">5:00 PM</div></div>
+  <div class="ecard"><div class="e">Ceremonia Civil</div><div class="ln"></div><h3>Salón Casa Meraki</h3><div class="s">8:00 PM</div></div>
+  <div class="ecard"><div class="e">Recepción</div><div class="ln"></div><h3>Salón Casa Meraki</h3><div class="s">9:00 PM</div></div>
+  <button class="btn dark mt" id="btnCal"><span set:html={icon("cal")}></span>Agregar al calendario</button>
+</div>
+
+<script>
+  document.getElementById("btnCal")?.addEventListener("click", () => {
+    const ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//BodaCJ//ES", "BEGIN:VEVENT",
+      "UID:" + Date.now() + "@bodacj",
+      "DTSTART:20270403T170000", "DTEND:20270404T013000",
+      "SUMMARY:Boda de Cristian & Jimena",
+      "LOCATION:Templo de Fatima / Salon Casa Meraki",
+      "DESCRIPTION:Religiosa 5PM Fatima. Civil y recepcion 8PM Casa Meraki.",
+      "END:VEVENT", "END:VCALENDAR",
+    ].join("\r\n");
+    const b = new Blob([ics], { type: "text/calendar" });
+    const u = URL.createObjectURL(b);
+    const a = document.createElement("a");
+    a.href = u; a.download = "Boda-Cristian-Jimena.ics"; a.click();
+    URL.revokeObjectURL(u);
+  });
+</script>

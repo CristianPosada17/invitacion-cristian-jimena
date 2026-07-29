@@ -1,0 +1,96 @@
+---
+import Ornament from "./Ornament.astro";
+---
+<div class="wrap">
+  <Ornament />
+  <div id="rsvp-box"></div>
+  <div style="height:20px"></div>
+</div>
+
+<script>
+  import { boot, esc, toast } from "../lib/state";
+  import { getToken } from "../lib/config";
+  import { submitRsvp } from "../lib/api";
+
+  const box = document.getElementById("rsvp-box");
+  let pickAsiste = true;
+  let state: any = null;
+
+  function setA(v: boolean) {
+    pickAsiste = v;
+    document.getElementById("a-si")?.classList.toggle("on", v);
+    document.getElementById("a-no")?.classList.toggle("on", !v);
+  }
+
+  async function submit() {
+    const guest = state.guest;
+    const token = getToken();
+    const sel = document.getElementById("f-pases") as HTMLSelectElement | null;
+    const pases = pickAsiste ? Number(sel?.value) || 0 : 0;
+    if (pickAsiste && !pases) { toast("Selecciona el número de pases"); return; }
+    const tel = (document.getElementById("f-tel") as HTMLInputElement | null)?.value || "";
+    toast("Enviando...");
+    try {
+      const r = await submitRsvp(token, pickAsiste, pases, tel.trim());
+      if (r && r.ok) {
+        guest.confirmado = true;
+        guest.asiste = pickAsiste;
+        guest.pases_confirmados = r.pases;
+        render();
+        document.body.dispatchEvent(new CustomEvent("rsvp:done"));
+        toast(pickAsiste ? "¡Confirmado! Gracias" : "Registrado, gracias");
+      } else toast("No se pudo guardar, intenta de nuevo");
+    } catch (e) {
+      toast("Sin conexión, intenta de nuevo");
+    }
+  }
+
+  function render() {
+    if (!box) return;
+    const token = getToken();
+    const guest = state?.guest;
+    if (!token) {
+      box.innerHTML =
+        '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">Confirma tu Asistencia</h3><p class="hint">Abre tu invitación desde el <b>link personalizado</b> que te enviamos por WhatsApp para poder confirmar.</p></div>';
+      return;
+    }
+    if (!guest) {
+      box.innerHTML =
+        '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">No encontramos tu invitación</h3><p class="hint">Verifica que abriste el link completo que te enviamos, o escríbenos por WhatsApp.</p></div>';
+      return;
+    }
+    if (guest.confirmado) {
+      if (guest.asiste) {
+        const p = guest.pases_confirmados || guest.max_pases;
+        box.innerHTML =
+          '<div class="sec-title">Estás Confirmado</div><div class="sec-sub mb">Nos vemos el 3 de abril</div>' +
+          '<p class="center hint mb" style="margin-top:10px">' + esc(guest.nombre) + " · " + p + " " + (p > 1 ? "pases" : "pase") +
+          '.<br>Ve a la sección <b>Detalles</b> para ver tu pase y tu mesa.</p>';
+      } else {
+        box.innerHTML =
+          '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:23px;margin:0 0 6px">Gracias, ' +
+          esc((guest.nombre || "").split(" ")[0]) +
+          '</h3><p class="hint">Registramos que no podrás acompañarnos. Te vamos a extrañar.</p></div>';
+      }
+      return;
+    }
+    let opts = '<option value="">Selecciona</option>';
+    for (let i = 1; i <= (guest.max_pases || 1); i++) opts += "<option>" + i + "</option>";
+    box.innerHTML =
+      '<div class="sec-title">Confirma tu Asistencia</div>' +
+      '<div class="sec-sub mb">Tienes ' + (guest.max_pases || 0) + " " + ((guest.max_pases || 0) > 1 ? "pases" : "pase") + " reservados</div>" +
+      '<div class="card mt"><label class="f">Invitación para</label><input class="t" value="' + esc(guest.nombre) + '" disabled>' +
+      '<div class="mt"><label class="f">Teléfono o correo</label><input class="t" id="f-tel" placeholder="Tu teléfono o correo"></div>' +
+      '<div class="mt"><label class="f">Número de pases (máx. ' + (guest.max_pases || 1) + ')</label><select class="t" id="f-pases">' + opts + "</select></div>" +
+      '<div class="mt"><label class="f">¿Asistirás?</label><div class="toggle"><button id="a-si" class="on">Sí, asistiré</button><button id="a-no">No podré</button></div></div></div>' +
+      '<button class="btn" id="btnRsvp">Enviar confirmación</button>' +
+      '<p class="hint center mt">Tu confirmación es muy importante para nosotros.</p>';
+    pickAsiste = true;
+    document.getElementById("a-si")?.addEventListener("click", () => setA(true));
+    document.getElementById("a-no")?.addEventListener("click", () => setA(false));
+    document.getElementById("btnRsvp")?.addEventListener("click", submit);
+  }
+
+  boot().then((s) => { state = s; render(); });
+</script>
+<!-- El contador regresivo vive únicamente en Countdown.astro para evitar duplicados. -->

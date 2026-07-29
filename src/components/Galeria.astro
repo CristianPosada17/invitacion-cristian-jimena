@@ -1,0 +1,178 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+const fotos = [
+  { src: "/galeria/foto-1.jpg", alt: "Cristian y Jimena celebrando juntos" },
+  { src: "/galeria/foto-2.jpg", alt: "Cristian y Jimena entre luces de celebración" },
+  { src: "/galeria/foto-3.jpg", alt: "La propuesta de matrimonio de Cristian a Jimena" },
+  { src: "/galeria/foto-4.jpg", alt: "Cristian y Jimena mirándose durante su compromiso" },
+  { src: "/galeria/foto-5.jpg", alt: "Jimena mostrando su anillo de compromiso" },
+  { src: "/galeria/foto-6.jpg", alt: "Cristian y Jimena frente a una iglesia" },
+  { src: "/galeria/foto-7.jpg", alt: "Cristian y Jimena juntos en el centro de la ciudad" },
+  { src: "/galeria/foto-8.jpg", alt: "Cristian y Jimena abrazados en una calle de la ciudad" },
+];
+const destacada = fotos[1];
+const mosaico = fotos.filter((_, index) => index !== 1);
+---
+<div class="wrap" style="padding-bottom:10px">
+  <SectionTitle title="Nuestra Galería" sub="Algunos momentos que forman parte de nuestra historia" />
+</div>
+
+<div class="gallery-feature">
+  <button
+    type="button"
+    class="gallery-photo"
+    data-gallery-image={destacada.src}
+    data-gallery-alt={destacada.alt}
+    aria-label="Ampliar fotografía destacada"
+  >
+    <img src={destacada.src} alt={destacada.alt} loading="eager" decoding="async" />
+    <span>Una noche para recordar</span>
+  </button>
+</div>
+
+<div class="couple-gallery" aria-label="Galería de Cristian y Jimena">
+  {mosaico.map((foto) => (
+    <figure class="gallery-item">
+      <button
+        type="button"
+        class="gallery-photo"
+        data-gallery-image={foto.src}
+        data-gallery-alt={foto.alt}
+        aria-label={`Ampliar: ${foto.alt}`}
+      >
+        <img src={foto.src} alt={foto.alt} loading="lazy" decoding="async" />
+      </button>
+    </figure>
+  ))}
+</div>
+
+<dialog class="gallery-lightbox" id="galleryLightbox" aria-label="Fotografía ampliada">
+  <button type="button" class="gallery-close" id="galleryClose" aria-label="Cerrar fotografía">×</button>
+  <img id="galleryLarge" alt="" />
+  <p id="galleryCaption"></p>
+</dialog>
+
+<script>
+  const dialog = document.getElementById("galleryLightbox") as HTMLDialogElement | null;
+  const large = document.getElementById("galleryLarge") as HTMLImageElement | null;
+  const caption = document.getElementById("galleryCaption");
+
+  document.querySelectorAll<HTMLElement>("[data-gallery-image]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!dialog || !large) return;
+      const src = button.dataset.galleryImage || "";
+      const alt = button.dataset.galleryAlt || "Fotografía de Cristian y Jimena";
+      large.src = src;
+      large.alt = alt;
+      if (caption) caption.textContent = alt;
+      dialog.showModal();
+    });
+  });
+
+  document.getElementById("galleryClose")?.addEventListener("click", () => dialog?.close());
+  dialog?.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+</script>
+
+<style>
+  .gallery-feature {
+    height: 238px;
+    margin: 0 22px 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 17px;
+  }
+  .gallery-photo {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: var(--color-sand);
+    color: white;
+    cursor: pointer;
+  }
+  .gallery-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+  }
+  .gallery-photo:active img { transform: scale(1.015); }
+  .gallery-feature .gallery-photo span {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 36px 14px 13px;
+    background: linear-gradient(transparent, rgba(18,14,10,.68));
+    font-family: var(--font-serif);
+    font-size: 20px;
+    letter-spacing: 1px;
+    text-align: left;
+  }
+  .couple-gallery {
+    column-count: 2;
+    column-gap: 10px;
+    padding: 0 22px;
+  }
+  .gallery-item {
+    break-inside: avoid;
+    margin: 0 0 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 14px;
+    background: var(--color-paper);
+  }
+  .gallery-item .gallery-photo { height: auto; }
+  .gallery-item img { height: auto; aspect-ratio: auto; }
+  .gallery-lightbox {
+    width: min(400px, calc(100vw - 30px));
+    max-height: calc(100dvh - 40px);
+    margin: auto;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 18px;
+    background: #17130f;
+    box-shadow: 0 24px 80px rgba(0,0,0,.45);
+  }
+  .gallery-lightbox::backdrop {
+    background: rgba(20,16,12,.82);
+    backdrop-filter: blur(5px);
+  }
+  .gallery-lightbox img {
+    display: block;
+    width: 100%;
+    max-height: calc(100dvh - 110px);
+    border-radius: 18px 18px 0 0;
+    object-fit: contain;
+  }
+  .gallery-lightbox p {
+    margin: 0;
+    padding: 11px 44px 13px 14px;
+    color: #e9ddc6;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .gallery-close {
+    position: absolute;
+    right: 9px;
+    bottom: 8px;
+    z-index: 2;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    color: white;
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1;
+  }
+</style>

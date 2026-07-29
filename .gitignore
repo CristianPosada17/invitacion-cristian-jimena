@@ -20,5 +20,8 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
+# originales pesados conservados fuera de la publicación
+media-originales/
+
 # jetbrains setting folder
 .idea/
