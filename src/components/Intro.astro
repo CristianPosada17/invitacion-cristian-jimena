@@ -11,6 +11,7 @@
   <video
     id="introVid"
     src="/Sobre.mp4"
+    poster="/sobre-poster.png"
     muted
     playsinline
     preload="auto"
@@ -29,6 +30,12 @@
 </div>
 
 <style>
+  #intro {
+    touch-action: manipulation;
+  }
+  #introVid {
+    pointer-events: none;
+  }
   #intro.waiting #introVid {
     animation: breathe 3.6s ease-in-out infinite;
   }
@@ -102,6 +109,7 @@
   #intro.gone {
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;
   }
   @media (prefers-reduced-motion: reduce) {
     #intro.waiting #introVid,
@@ -119,10 +127,22 @@
   let started = false;
   let revealed = false;
 
+  function resetHomeScroll() {
+    const app = document.getElementById("app");
+    if (!app) return;
+    app.style.overflowY = "auto";
+    app.scrollTop = 0;
+  }
+
   function reveal() {
     if (revealed || !intro) return;
     revealed = true;
     intro.classList.add("gone");
+    resetHomeScroll();
+    window.setTimeout(() => {
+      intro.remove();
+      resetHomeScroll();
+    }, 750);
     try {
       sessionStorage.setItem("introSeen", "1");
     } catch (e) {}
@@ -149,19 +169,13 @@
   } catch (e) {}
 
   if (seen) {
-    intro?.classList.add("gone");
+    intro?.remove();
     revealed = true;
+    window.requestAnimationFrame(resetHomeScroll);
   } else {
     intro?.classList.add("waiting");
     if (vid) {
       vid.pause();
-      const showFirstFrame = () => {
-        try {
-          vid.currentTime = 0.02;
-        } catch (e) {}
-      };
-      if (vid.readyState >= 2) showFirstFrame();
-      else vid.addEventListener("loadeddata", showFirstFrame, { once: true });
       vid.addEventListener("ended", reveal);
     }
     intro?.addEventListener("click", start);

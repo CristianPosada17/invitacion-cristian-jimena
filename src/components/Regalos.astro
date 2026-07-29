@@ -2,23 +2,48 @@
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
 ---
+
 <div class="wrap">
   <SectionTitle title="Regalos" />
   <div class="card">
     <div class="dcard" style="padding-bottom:14px">
-      <div class="ic" set:html={icon("gift")}></div>
-      <div class="tx"><b>Mesa de Regalos</b><span id="searsLabel">Disponible próximamente</span></div>
+      <div class="ic" set:html={icon("gift")} />
+      <div class="tx">
+        <b>Mesa de Regalos</b><span id="searsLabel"
+          >Disponible próximamente</span
+        >
+      </div>
     </div>
-    <button class="btn ghost" id="btnSears"><span set:html={icon("gift")}></span>Ver lista de regalos</button>
+    <button class="btn ghost" id="btnSears"
+      ><span set:html={icon("gift")} />Ver lista de regalos</button
+    >
   </div>
   <div class="card">
     <div class="dcard" style="padding-bottom:10px">
-      <div class="ic" set:html={icon("cash")}></div>
-      <div class="tx"><b>Regalo en efectivo</b><span>Si lo prefieres, con mucho cariño</span></div>
+      <div class="ic" set:html={icon("cash")} />
+      <div class="tx">
+        <b>Regalo en efectivo</b><span>Si lo prefieres, con mucho cariño</span>
+      </div>
     </div>
-    <div class="copyrow"><div><div class="l">Banco</div><div class="v" id="bkBanco">—</div></div><button data-copy="bkBanco">Copiar</button></div>
-    <div class="copyrow"><div><div class="l">Titular</div><div class="v" id="bkTitular">Cristian & Jimena</div></div><button data-copy="bkTitular">Copiar</button></div>
-    <div class="copyrow"><div><div class="l">CLABE / Tarjeta</div><div class="v" id="bkClabe">—</div></div><button data-copy="bkClabe">Copiar</button></div>
+    <div class="copyrow">
+      <div>
+        <div class="l">Banco</div><div class="v" id="bkBanco">BBVA</div>
+      </div><button data-copy="bkBanco">Copiar</button>
+    </div>
+    <div class="copyrow">
+      <div>
+        <div class="l">Titular</div><div class="v" id="bkTitular">
+          Cristian Adan Parra Posada
+        </div>
+      </div><button data-copy="bkTitular">Copiar</button>
+    </div>
+    <div class="copyrow">
+      <div>
+        <div class="l">CLABE</div><div class="v" id="bkClabe">
+          012 180 015482500115
+        </div>
+      </div><button data-copy="bkClabe">Copiar</button>
+    </div>
   </div>
   <div style="height:20px"></div>
 </div>
@@ -27,7 +52,10 @@ import { icon } from "../lib/icons";
   import { boot, toast } from "../lib/state";
   boot().then((s) => {
     const cfg = s.config || {};
-    const set = (id: string, v: any) => { const el = document.getElementById(id); if (el && v) el.textContent = v; };
+    const set = (id: string, v: any) => {
+      const el = document.getElementById(id);
+      if (el && v) el.textContent = v;
+    };
     set("bkBanco", cfg.banco);
     set("bkTitular", cfg.titular);
     set("bkClabe", cfg.clabe);
@@ -35,9 +63,13 @@ import { icon } from "../lib/icons";
     const lbl = document.getElementById("searsLabel");
     if (cfg.sears_url) {
       if (lbl) lbl.textContent = "Lista disponible";
-      sears?.addEventListener("click", () => window.open(cfg.sears_url, "_blank"));
+      sears?.addEventListener("click", () =>
+        window.open(cfg.sears_url, "_blank"),
+      );
     } else {
-      sears?.addEventListener("click", () => toast("Lista disponible próximamente"));
+      sears?.addEventListener("click", () =>
+        toast("Lista disponible próximamente"),
+      );
     }
   });
   document.querySelectorAll("[data-copy]").forEach((b) =>
@@ -46,6 +78,6 @@ import { icon } from "../lib/icons";
       const v = document.getElementById(id)?.textContent || "";
       if (navigator.clipboard) navigator.clipboard.writeText(v);
       toast("Copiado");
-    })
+    }),
   );
 </script>
