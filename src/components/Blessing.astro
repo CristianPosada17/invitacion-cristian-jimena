@@ -1,9 +1,62 @@
 ---
 // Logo + frase de bendición bajo la portada
 ---
-<div class="center" style="padding:40px 0 0">
+<div class="welcome center">
   <img class="logo" src="/logo-boda.png" alt="Cristian & Jimena" />
-  <p class="hint" style="max-width:290px;margin:6px auto 0">
+  <div class="welcome-label">Una invitación especial para</div>
+  <div class="welcome-name" id="welcomeGuestName">ti</div>
+  <p class="welcome-copy">
     Con la bendición de Dios y de nuestras familias, nos encantaría celebrar este día contigo.
   </p>
 </div>
+
+<style>
+  .welcome {
+    padding: 32px 22px 2px;
+  }
+  .welcome .logo {
+    width: 185px;
+    height: 185px;
+    filter: contrast(1.1) saturate(1.08);
+  }
+  .welcome-label {
+    margin-top: 5px;
+    color: #87682f;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+  }
+  .welcome-name {
+    max-width: 340px;
+    margin: 4px auto 7px;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .welcome-copy {
+    max-width: 330px;
+    margin: 0 auto;
+    color: #746959;
+    font-family: var(--font-serif);
+    font-size: 18.5px;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+</style>
+
+<script>
+  import { loadGuest } from "../lib/state";
+  import { getGuestNameHint } from "../lib/config";
+
+  const nameHint = getGuestNameHint();
+  const welcomeName = document.getElementById("welcomeGuestName");
+  if (nameHint && welcomeName) welcomeName.textContent = nameHint;
+  loadGuest().then(({ guest }) => {
+    const name = document.getElementById("welcomeGuestName");
+    if (!name || !guest?.nombre) return;
+    name.textContent = [guest.prot, guest.nombre].filter(Boolean).join(" ");
+  });
+</script>

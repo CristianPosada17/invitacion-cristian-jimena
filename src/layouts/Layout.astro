@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Nav from "../components/Nav.astro";
 import InstallPrompt from "../components/InstallPrompt.astro";
+import { WEDDING_AUDIO } from "../lib/config";
 
 interface Props {
   title?: string;
@@ -63,24 +64,78 @@ const shareImage = siteUrl + "/og-boda.png?v=2";
       <div id="app">
         <slot />
       </div>
+      <audio id="weddingAudio" src={WEDDING_AUDIO || undefined} loop preload="none"></audio>
+      {WEDDING_AUDIO && (
+        <button id="audioToggle" type="button" aria-label="Pausar música" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 18V5l10-2v13"></path>
+            <circle cx="6.5" cy="18" r="2.5"></circle>
+            <circle cx="16.5" cy="16" r="2.5"></circle>
+          </svg>
+        </button>
+      )}
       <Nav active={active} />
       <InstallPrompt />
       <div class="toast" id="toast"></div>
     </div>
 
     <script>
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.classList.add("is-visible");
-              io.unobserve(e.target);
-            }
-          });
-        },
-        { threshold: 0.12 }
+      const revealTargets = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "#app > #hero, #app > .welcome, #app > .landing-section > :not(style):not(script)"
+        )
       );
-      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+      let revealsStarted = false;
+
+      const revealObserver = "IntersectionObserver" in window
+        ? new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add("is-visible");
+                revealObserver?.unobserve(entry.target);
+              });
+            },
+            { threshold: 0.08, rootMargin: "0px 0px -5% 0px" }
+          )
+        : null;
+
+      revealTargets.forEach((target, index) => {
+        target.classList.add("reveal", "reveal-soft");
+        target.style.setProperty("--reveal-delay", String((index % 3) * 55) + "ms");
+      });
+
+      function startReveals() {
+        if (revealsStarted) return;
+        revealsStarted = true;
+        revealTargets.forEach((target) => {
+          if (revealObserver) revealObserver.observe(target);
+          else target.classList.add("is-visible");
+        });
+      }
+
+      if (document.getElementById("intro")) {
+        document.body.addEventListener("intro:done", startReveals, { once: true });
+      } else {
+        startReveals();
+      }
+
+      const weddingAudio = document.getElementById("weddingAudio") as HTMLAudioElement | null;
+      const audioToggle = document.getElementById("audioToggle") as HTMLButtonElement | null;
+      function syncAudioButton() {
+        if (!weddingAudio || !audioToggle) return;
+        const playing = !weddingAudio.paused;
+        audioToggle.classList.toggle("playing", playing);
+        audioToggle.setAttribute("aria-pressed", String(playing));
+        audioToggle.setAttribute("aria-label", playing ? "Pausar música" : "Reproducir música");
+      }
+      audioToggle?.addEventListener("click", () => {
+        if (!weddingAudio) return;
+        if (weddingAudio.paused) weddingAudio.play().catch(() => {});
+        else weddingAudio.pause();
+      });
+      weddingAudio?.addEventListener("play", syncAudioButton);
+      weddingAudio?.addEventListener("pause", syncAudioButton);
     </script>
   </body>
 </html>

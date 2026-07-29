@@ -108,7 +108,7 @@ import AdminLayout from "../layouts/AdminLayout.astro";
   }
 
   function guestUrl(g: any) {
-    return `${location.origin}/?g=${encodeURIComponent(g.token)}&v=2`;
+    return `${location.origin}/?g=${encodeURIComponent(g.token)}&n=${encodeURIComponent(displayName(g))}&v=2`;
   }
 
   function setFeedback(message: string, error = false) {

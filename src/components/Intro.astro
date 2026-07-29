@@ -18,6 +18,14 @@
     class="w-full h-full object-cover"></video>
   <div id="introGlow" class="pointer-events-none absolute inset-0"></div>
   <div
+    id="introGuestCard"
+    class="pointer-events-none absolute left-5 right-5 top-[15%] text-center"
+  >
+    <span>Hemos preparado esta invitación especialmente para</span>
+    <strong id="introGuestName">alguien muy especial</strong>
+    <small>Nos encantará compartir este día contigo</small>
+  </div>
+  <div
     id="introHint"
     class="pointer-events-none absolute bottom-12 left-0 right-0 flex flex-col items-center gap-3"
   >
@@ -61,6 +69,37 @@
   #intro.waiting #introGlow {
     animation: glow 2.4s ease-in-out infinite;
   }
+  #introGuestCard {
+    color: rgba(78, 61, 35, 0.94);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.44);
+    transition:
+      opacity 0.3s ease,
+      transform 0.45s ease;
+  }
+  #introGuestCard span,
+  #introGuestCard small {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    line-height: 1.45;
+    text-transform: uppercase;
+  }
+  #introGuestCard strong {
+    display: block;
+    max-width: 340px;
+    margin: 7px auto 5px;
+    font-family: var(--font-serif);
+    font-size: 27px;
+    font-weight: 500;
+    line-height: 1.05;
+  }
+  #introGuestCard small {
+    font-size: 8px;
+    letter-spacing: 1.4px;
+    opacity: 0.74;
+  }
   @keyframes glow {
     0%,
     100% {
@@ -102,9 +141,13 @@
     }
   }
   #intro.playing #introGlow,
-  #intro.playing #introHint {
+  #intro.playing #introHint,
+  #intro.playing #introGuestCard {
     opacity: 0 !important;
     animation: none !important;
+  }
+  #intro.playing #introGuestCard {
+    transform: translateY(-8px);
   }
   #intro.gone {
     opacity: 0;
@@ -122,10 +165,47 @@
 </style>
 
 <script>
+  import { loadGuest } from "../lib/state";
+  import { WEDDING_AUDIO, getGuestNameHint } from "../lib/config";
+
   const intro = document.getElementById("intro");
   const vid = document.getElementById("introVid") as HTMLVideoElement | null;
+  const weddingAudio = document.getElementById(
+    "weddingAudio",
+  ) as HTMLAudioElement | null;
   let started = false;
   let revealed = false;
+
+  const guestNameHint = getGuestNameHint();
+  const introGuestName = document.getElementById("introGuestName");
+  if (guestNameHint && introGuestName)
+    introGuestName.textContent = guestNameHint;
+
+  loadGuest().then(({ guest }) => {
+    const guestName = document.getElementById("introGuestName");
+    if (!guestName || !guest?.nombre) return;
+    guestName.textContent = [guest.prot, guest.nombre]
+      .filter(Boolean)
+      .join(" ");
+  });
+
+  function startWeddingMusic() {
+    if (!weddingAudio || !WEDDING_AUDIO) return;
+    if (!weddingAudio.src) weddingAudio.src = WEDDING_AUDIO;
+    weddingAudio.volume = 0;
+    weddingAudio
+      .play()
+      .then(() => {
+        document.getElementById("audioToggle")?.classList.add("playing");
+        let volume = 0;
+        const fade = window.setInterval(() => {
+          volume = Math.min(0.72, volume + 0.06);
+          weddingAudio.volume = volume;
+          if (volume >= 0.72) window.clearInterval(fade);
+        }, 90);
+      })
+      .catch(() => {});
+  }
 
   function resetHomeScroll() {
     const app = document.getElementById("app");
@@ -154,6 +234,7 @@
     started = true;
     intro.classList.remove("waiting");
     intro.classList.add("playing");
+    startWeddingMusic();
     if (vid) {
       vid.currentTime = 0;
       vid.play().catch(() => reveal());

@@ -43,6 +43,7 @@ const items = [
   links.forEach((link) => {
     const section = link.dataset.section || "hero";
     const url = new URL("/", location.origin);
+    new URLSearchParams(location.search).forEach((value, key) => url.searchParams.set(key, value));
     if (token) url.searchParams.set("g", token);
     url.hash = section;
     link.href = url.toString();

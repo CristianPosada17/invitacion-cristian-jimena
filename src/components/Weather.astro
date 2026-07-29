@@ -1,0 +1,207 @@
+---
+import { icon } from "../lib/icons";
+---
+
+<div class="wrap weather-wrap">
+  <div class="weather-card">
+    <div class="weather-heading">
+      <div class="weather-icon" aria-hidden="true" set:html={icon("weather")}></div>
+      <div>
+        <div class="weather-kicker">El gran día</div>
+        <h3>Clima esperado</h3>
+        <span id="weatherLocation">Durango, Dgo.</span>
+      </div>
+    </div>
+    <div class="weather-rule"></div>
+    <div class="weather-content" id="weatherContent" aria-live="polite">
+      <div class="weather-symbol" id="weatherSymbol">✦</div>
+      <div>
+        <b id="weatherSummary">Pronóstico disponible próximamente</b>
+        <p id="weatherDetails">Se actualizará automáticamente al acercarse la fecha.</p>
+      </div>
+    </div>
+    <div class="weather-auto"><i></i> Actualización automática</div>
+  </div>
+</div>
+
+<style>
+  .weather-wrap {
+    padding-top: 18px;
+  }
+  .weather-card {
+    margin-bottom: 8px;
+    padding: 18px;
+    border: 1px solid rgba(184, 150, 90, 0.32);
+    border-radius: 18px;
+    background: rgba(255, 253, 248, 0.76);
+    box-shadow: 0 16px 36px -32px rgba(74, 65, 54, 0.72);
+    backdrop-filter: blur(2px);
+  }
+  .weather-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .weather-icon {
+    width: 43px;
+    height: 43px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--color-sage-d);
+    background: rgba(230, 212, 171, 0.42);
+  }
+  .weather-icon :global(.svic) {
+    width: 22px;
+    height: 22px;
+  }
+  .weather-kicker {
+    color: var(--color-gold-d);
+    font-size: 8px;
+    letter-spacing: 2.3px;
+    text-transform: uppercase;
+  }
+  .weather-heading h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 1.05;
+  }
+  .weather-heading span {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-soft);
+    font-size: 10px;
+    letter-spacing: 0.6px;
+  }
+  .weather-rule {
+    height: 1px;
+    margin: 14px 0;
+    background: linear-gradient(90deg, transparent, var(--color-line), transparent);
+  }
+  .weather-content {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+  }
+  .weather-symbol {
+    width: 46px;
+    flex: 0 0 46px;
+    color: var(--color-gold-d);
+    font-family: var(--font-serif);
+    font-size: 32px;
+    line-height: 1;
+    text-align: center;
+  }
+  .weather-content b {
+    display: block;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .weather-content p {
+    margin: 3px 0 0;
+    color: var(--color-soft);
+    font-size: 10.5px;
+    font-weight: 300;
+    line-height: 1.45;
+  }
+  .weather-auto {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 12px;
+    color: var(--color-soft);
+    font-size: 8px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .weather-auto i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-sage);
+    box-shadow: 0 0 0 3px rgba(155, 165, 137, 0.13);
+  }
+</style>
+
+<script>
+  import { WEATHER_LOCATION, WEDDING } from "../lib/config";
+
+  const summary = document.getElementById("weatherSummary");
+  const details = document.getElementById("weatherDetails");
+  const symbol = document.getElementById("weatherSymbol");
+  const location = document.getElementById("weatherLocation");
+
+  if (location) location.textContent = WEATHER_LOCATION.name;
+
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const targetDate =
+    WEDDING.getFullYear() + "-" + pad(WEDDING.getMonth() + 1) + "-" + pad(WEDDING.getDate());
+  const daysUntil = Math.ceil((WEDDING.getTime() - Date.now()) / 86400000);
+  const activationDate = new Date(WEDDING);
+  activationDate.setDate(activationDate.getDate() - 16);
+  const activationLabel = new Intl.DateTimeFormat("es-MX", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "America/Mexico_City",
+  }).format(activationDate);
+
+  function weatherDescription(code: number) {
+    if (code === 0) return { label: "Cielo despejado", mark: "☀" };
+    if (code <= 3) return { label: "Parcialmente nublado", mark: "☁" };
+    if (code <= 48) return { label: "Posible neblina", mark: "≈" };
+    if (code <= 82) return { label: "Posibilidad de lluvia", mark: "☂" };
+    return { label: "Posibles tormentas", mark: "⚡" };
+  }
+
+  async function loadWeddingWeather() {
+    if (!summary || !details || !symbol) return;
+    if (daysUntil > 16) {
+      summary.textContent = "Pronóstico disponible próximamente";
+      details.textContent = "Se activará automáticamente a partir del " + activationLabel + ".";
+      return;
+    }
+    if (daysUntil < -1) {
+      summary.textContent = "Gracias por acompañarnos";
+      details.textContent = "La celebración ya forma parte de nuestra historia.";
+      return;
+    }
+
+    summary.textContent = "Consultando el pronóstico…";
+    details.textContent = "La información se actualiza con los modelos meteorológicos más recientes.";
+    try {
+      const params = new URLSearchParams({
+        latitude: String(WEATHER_LOCATION.latitude),
+        longitude: String(WEATHER_LOCATION.longitude),
+        daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+        timezone: "America/Mexico_City",
+        forecast_days: "16",
+      });
+      const response = await fetch("https://api.open-meteo.com/v1/forecast?" + params.toString());
+      if (!response.ok) throw new Error("weather unavailable");
+      const data = await response.json();
+      const index = (data.daily?.time || []).indexOf(targetDate);
+      if (index < 0) throw new Error("date unavailable");
+
+      const code = Number(data.daily.weather_code[index]);
+      const max = Math.round(Number(data.daily.temperature_2m_max[index]));
+      const min = Math.round(Number(data.daily.temperature_2m_min[index]));
+      const rain = Math.round(Number(data.daily.precipitation_probability_max[index]) || 0);
+      const condition = weatherDescription(code);
+      symbol.textContent = condition.mark;
+      summary.textContent = condition.label;
+      details.textContent = "Máx. " + max + "° · Mín. " + min + "° · " + rain + "% de probabilidad de lluvia.";
+    } catch (error) {
+      summary.textContent = "Pronóstico pendiente";
+      details.textContent = "Volveremos a consultarlo automáticamente cuando abras la invitación.";
+    }
+  }
+
+  loadWeddingWeather();
+</script>

@@ -1,6 +1,6 @@
 // Service Worker · Boda Cristian & Jimena (PWA)
-const CACHE = "bodacj-v9";
-const ASSETS = ["/", "/logo-boda.png", "/og-boda.png", "/Sobre.mp4", "/sobre-poster.png", "/galeria/foto-8.jpg", "/manifest.webmanifest"];
+const CACHE = "bodacj-v16";
+const ASSETS = ["/", "/logo-boda.png", "/og-boda.png", "/paper-texture.jpg", "/Sobre.mp4", "/sobre-poster.png", "/galeria/foto-8.jpg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

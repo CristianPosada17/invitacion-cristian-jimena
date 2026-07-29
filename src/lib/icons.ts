@@ -9,6 +9,8 @@ export const ICONS: Record<string, string> = {
   phone: '<path d="M6 3h3l2 5-2.5 1.5a11 11 0 005 5L16 12l5 2v4a2 2 0 01-2 2A16 16 0 013 5a2 2 0 013-2z"/>',
   pin: '<path d="M12 21s7-6 7-11a7 7 0 10-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  music: '<path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+  weather: '<path d="M8 17H6a4 4 0 110-8 6 6 0 0111.5 1.7A3.5 3.5 0 1118 17H8z"/><path d="M14 4V2M19 6l1.5-1.5M9 6L7.5 4.5"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.8"/><path d="M4 18l5-4 4 3 3-2 5 4"/>',
   upload: '<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
   ticket: '<path d="M4 7h16v3a2 2 0 000 4v3H4v-3a2 2 0 000-4z"/><path d="M12 7v10"/>',
