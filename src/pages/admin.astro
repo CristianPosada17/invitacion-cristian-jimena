@@ -3,6 +3,16 @@ import AdminLayout from "../layouts/AdminLayout.astro";
 ---
 <AdminLayout>
   <div class="admin-wrap">
+    <div id="adminLoading" class="admin-loading" aria-hidden="true" role="status">
+      <div class="admin-loading-card">
+        <div class="admin-spinner" aria-hidden="true">
+          <img src="/logo-boda.png" alt="" />
+        </div>
+        <strong>Preparando el panel…</strong>
+        <span>Consultando la lista de invitados</span>
+      </div>
+    </div>
+
     <!-- Acceso -->
     <div id="gate" class="gate">
       <img src="/logo-boda.png" alt="C&J" style="width:80px;margin:0 auto 12px" />
@@ -70,6 +80,12 @@ import AdminLayout from "../layouts/AdminLayout.astro";
   let PASS = "";
   let data: any = null;
 
+  function setLoading(active: boolean) {
+    const loading = $("adminLoading");
+    loading.classList.toggle("show", active);
+    loading.setAttribute("aria-hidden", String(!active));
+  }
+
   async function enter() {
     const p = ($("pass") as HTMLInputElement).value.trim();
     if (!p) return;
@@ -77,6 +93,7 @@ import AdminLayout from "../layouts/AdminLayout.astro";
     enterButton.disabled = true;
     enterButton.textContent = "Entrando...";
     $("err").style.display = "none";
+    setLoading(true);
     const r = await adminList(p).catch(() => ({ ok: false }));
     if (r && r.ok) {
       PASS = p;
@@ -89,8 +106,10 @@ import AdminLayout from "../layouts/AdminLayout.astro";
       $("gate").style.display = "none";
       $("dash").style.display = "block";
       render();
+      setLoading(false);
     } else {
       sessionStorage.removeItem("adminpass");
+      setLoading(false);
       $("err").style.display = "block";
       enterButton.disabled = false;
       enterButton.textContent = "Entrar";
