@@ -27,14 +27,27 @@ const { title = "Admin · Boda Cristian & Jimena" } = Astro.props;
 
 <style is:global>
   /* El admin NO usa el marco de celular: es página web normal y responsiva */
+  html {
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
   body.adminbody {
     display: block;
     background: #f4eee1;
-    min-height: 100vh;
+    width: 100%;
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
     color: var(--color-ink);
   }
   .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 22px 16px 70px; }
   .a-head { text-align: center; margin: 10px 0 22px; }
+  .a-head-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .role-badge { display: inline-flex; align-items: center; min-height: 34px; border-radius: 999px; padding: 7px 12px; background: #fff; border: 1px solid var(--color-line); color: var(--color-gold-d); font-size: 11px; letter-spacing: .7px; }
   .a-head .eyebrow { }
   .a-head h1 { font-family: var(--font-serif); font-weight: 500; font-size: 34px; margin-top: 4px; }
   .a-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
@@ -42,11 +55,12 @@ const { title = "Admin · Boda Cristian & Jimena" } = Astro.props;
   .a-stat { background: #fff; border: 1px solid var(--color-line); border-radius: 14px; padding: 16px; text-align: center; }
   .a-stat b { font-family: var(--font-serif); font-size: 30px; color: var(--color-gold-d); display: block; line-height: 1; }
   .a-stat span { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--color-soft); }
-  .a-panel { background: #fff; border: 1px solid var(--color-line); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+  .a-panel { max-width: 100%; overflow: hidden; background: #fff; border: 1px solid var(--color-line); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
   .a-panel h2 { font-family: var(--font-serif); font-weight: 500; font-size: 22px; margin-bottom: 12px; }
   .a-input { width: 100%; border: 1px solid var(--color-line); border-radius: 10px; padding: 12px 14px; font-family: var(--font-sans); font-size: 15px; outline: none; }
   .a-input:focus { border-color: var(--color-gold); }
-  .a-btn { background: var(--color-gold); color: #fff; border: 0; border-radius: 10px; padding: 12px 18px; cursor: pointer; font-family: var(--font-sans); letter-spacing: 1px; }
+  .a-btn { min-height: 44px; background: var(--color-gold); color: #fff; border: 0; border-radius: 10px; padding: 12px 18px; cursor: pointer; font-family: var(--font-sans); letter-spacing: 1px; }
+  .a-btn:disabled { cursor: wait; opacity: .65; }
   .a-btn.a-secondary { background: #faf6ec; color: var(--color-gold-d); border: 1px solid var(--color-line); white-space: nowrap; }
   .link-info { display: flex; align-items: center; justify-content: space-between; gap: 18px; background: #faf6ec; border: 1px solid var(--color-line); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
   .link-info b { display: block; font-size: 13px; color: var(--color-ink); }
@@ -57,15 +71,16 @@ const { title = "Admin · Boda Cristian & Jimena" } = Astro.props;
   .a-toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) auto auto; gap: 10px; align-items: center; }
   .link-feedback { min-height: 19px; margin: 7px 2px 4px; color: var(--color-sage-d); font-size: 12px; }
   .link-feedback.error { color: #a5604f; }
+  .photo-permission { margin: -5px 0 13px; color: var(--color-soft); font-size: 12px; line-height: 1.5; }
   table.a-table { width: 100%; border-collapse: collapse; font-size: 14px; }
   .a-table th, .a-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--color-line); white-space: nowrap; }
   .a-table th { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--color-soft); }
-  .a-scroll { overflow-x: auto; }
+  .a-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .tag { font-size: 11px; padding: 3px 9px; border-radius: 20px; }
   .tag.yes { background: #e7efe1; color: #5f7150; }
   .tag.no { background: #f2e2df; color: #a5604f; }
   .tag.pend { background: #f1ead7; color: #98803f; }
-  .a-link { border: 1px solid var(--color-line); background: #faf6ec; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-family: var(--font-sans); }
+  .a-link { min-height: 38px; border: 1px solid var(--color-line); background: #faf6ec; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 12px; font-family: var(--font-sans); }
   .link-cell { min-width: 310px; white-space: normal; }
   .link-url { display: block; max-width: 390px; color: var(--color-soft); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .link-actions { display: flex; gap: 7px; margin-top: 7px; }
@@ -74,11 +89,32 @@ const { title = "Admin · Boda Cristian & Jimena" } = Astro.props;
   .a-photo { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--color-line); }
   .a-photo img { width: 100%; height: 120px; object-fit: cover; display: block; }
   .a-photo button { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.55); color: #fff; border: 0; border-radius: 8px; padding: 4px 8px; cursor: pointer; font-size: 11px; }
-  .gate { max-width: 360px; margin: 60px auto; background: #fff; border: 1px solid var(--color-line); border-radius: 16px; padding: 26px; text-align: center; }
+  body[data-role="organizers"] .a-photo button { display: none; }
+  .gate { width: calc(100% - 24px); max-width: 360px; margin: 60px auto; background: #fff; border: 1px solid var(--color-line); border-radius: 16px; padding: 26px; text-align: center; }
   @media (max-width: 720px) {
+    .admin-wrap { padding: 12px 10px 50px; }
+    .gate { margin: 24px auto; padding: 22px 18px; }
+    .a-head { margin-bottom: 16px; }
+    .a-head h1 { font-size: 28px; }
+    .a-panel { padding: 13px; border-radius: 13px; }
     .link-info { align-items: flex-start; flex-direction: column; }
     .link-origin { text-align: left; }
     .a-toolbar { grid-template-columns: 1fr 1fr; }
     .a-toolbar .a-input { grid-column: 1 / -1; }
+    .a-scroll { overflow: visible; }
+    table.a-table, .a-table tbody, .a-table tr, .a-table td { display: block; width: 100%; }
+    .a-table thead { display: none; }
+    .a-table tr { margin-bottom: 12px; padding: 6px 12px; border: 1px solid var(--color-line); border-radius: 12px; background: #fffdf8; }
+    .a-table td { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; padding: 9px 0; white-space: normal; }
+    .a-table td::before { color: var(--color-soft); font-size: 10px; font-weight: 500; letter-spacing: .8px; text-transform: uppercase; }
+    .a-table td:nth-child(1)::before { content: "Nombre"; }
+    .a-table td:nth-child(2)::before { content: "Estado"; }
+    .a-table td:nth-child(3)::before { content: "Pases"; }
+    .a-table td:nth-child(4)::before { content: "Mesa"; }
+    .a-table td:nth-child(5)::before { content: "Enlace"; }
+    .link-cell { min-width: 0; }
+    .link-url { max-width: 100%; }
+    .link-actions { flex-wrap: wrap; }
+    .a-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>

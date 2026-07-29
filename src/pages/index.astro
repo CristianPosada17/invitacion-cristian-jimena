@@ -6,20 +6,38 @@ import Blessing from "../components/Blessing.astro";
 import Countdown from "../components/Countdown.astro";
 import Rsvp from "../components/Rsvp.astro";
 import InformacionImportante from "../components/InformacionImportante.astro";
-import Regalos from "../components/Regalos.astro";
+import Contacto from "../components/Contacto.astro";
 import Historia from "../components/Historia.astro";
+import Regalos from "../components/Regalos.astro";
 import Musica from "../components/Musica.astro";
+import TuInvitacion from "../components/TuInvitacion.astro";
+import Detalles from "../components/Detalles.astro";
+import Itinerario from "../components/Itinerario.astro";
+import Ubicaciones from "../components/Ubicaciones.astro";
+import Galeria from "../components/Galeria.astro";
+import Album from "../components/Album.astro";
 ---
 
 <Layout active="inicio">
   <Intro slot="overlay" />
   <Hero />
   <Blessing />
-  <Countdown />
-  <Rsvp />
-  <InformacionImportante />
-  <Regalos />
-  <Historia />
-  <Musica />
+  <section id="contador" class="landing-section"><Countdown /></section>
+  <section id="confirmacion" class="landing-section"><Rsvp /></section>
+  <section id="informacion" class="landing-section">
+    <InformacionImportante />
+    <Contacto />
+  </section>
+  <section id="fotos" class="landing-section"><Historia /></section>
+  <section id="regalos" class="landing-section"><Regalos /></section>
+  <section id="detalles" class="landing-section">
+    <TuInvitacion />
+    <Detalles />
+    <Itinerario />
+    <Ubicaciones />
+  </section>
+  <section id="galeria" class="landing-section"><Galeria /></section>
+  <section id="seccion-album" class="landing-section"><Album /></section>
+  <section id="musica" class="landing-section"><Musica /></section>
   <div style="height:10px"></div>
 </Layout>

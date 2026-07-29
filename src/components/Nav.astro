@@ -1,37 +1,77 @@
 ---
-// Barra inferior · navegación multi-página (cada botón es una página distinta).
-// Conserva el link personalizado (?g=token) al cambiar de página.
-interface Props { active?: string; }
-const { active = "inicio" } = Astro.props;
-
+// Barra inferior · navega entre secciones de la landing y conserva ?g=token.
 const items = [
-  { id: "inicio", label: "Inicio", href: "/", path: '<path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/>' },
-  { id: "detalles", label: "Detalles", href: "/detalles", path: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 4v-1M16 4v-1M4 9h16"/>' },
-  { id: "galeria", label: "Galería", href: "/galeria", path: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><path d="M4 18l5-4 4 3 3-2 5 4"/>' },
-  { id: "album", label: "Álbum", href: "/album", path: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/>' },
-  { id: "mas", label: "Más", href: "/mas", path: '<path d="M4 7h16M4 12h16M4 17h16"/>' },
+  { section: "hero", label: "Inicio", path: '<path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/>' },
+  { section: "confirmacion", label: "Confirmar", path: '<path d="M5 12l4 4L19 6"/><circle cx="12" cy="12" r="9"/>' },
+  { section: "detalles", label: "Detalles", path: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 4v-1M16 4v-1M4 9h16"/>' },
+  { section: "galeria", label: "Galería", path: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><path d="M4 18l5-4 4 3 3-2 5 4"/>' },
+  { section: "seccion-album", label: "Álbum", path: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/>' },
 ];
 ---
-<div id="nav">
-  {items.map((it) => (
-    <a href={it.href} class={active === it.id ? "on" : ""} aria-label={it.label}>
+<nav id="nav" aria-label="Secciones de la invitación">
+  {items.map((it, index) => (
+    <a
+      href={"/#" + it.section}
+      class={index === 0 ? "on" : ""}
+      data-section={it.section}
+      aria-label={it.label}
+      aria-current={index === 0 ? "true" : undefined}
+    >
       <svg viewBox="0 0 24 24" fill="none" set:html={it.path}></svg>
       {it.label}
     </a>
   ))}
-</div>
+</nav>
 
 <script>
   import { getToken } from "../lib/config";
-  const t = getToken();
-  if (t) {
-    document.querySelectorAll("#nav a").forEach((a) => {
-      try {
-        const el = a as HTMLAnchorElement;
-        const u = new URL(el.href);
-        u.searchParams.set("g", t);
-        el.href = u.toString();
-      } catch (e) {}
+
+  const nav = document.getElementById("nav");
+  const app = document.getElementById("app");
+  const links = Array.from(nav?.querySelectorAll<HTMLAnchorElement>("a[data-section]") || []);
+  const token = getToken();
+
+  function markActive(section: string) {
+    links.forEach((link) => {
+      const active = link.dataset.section === section;
+      link.classList.toggle("on", active);
+      if (active) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
     });
+  }
+
+  links.forEach((link) => {
+    const section = link.dataset.section || "hero";
+    const url = new URL("/", location.origin);
+    if (token) url.searchParams.set("g", token);
+    url.hash = section;
+    link.href = url.toString();
+
+    link.addEventListener("click", (event) => {
+      const target = document.getElementById(section);
+      if (location.pathname !== "/" || !target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      markActive(section);
+      history.replaceState(null, "", location.pathname + location.search + "#" + section);
+    });
+  });
+
+  if (app) {
+    let scheduled = false;
+    app.addEventListener("scroll", () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        const guide = app.getBoundingClientRect().top + app.clientHeight * 0.38;
+        let current = "hero";
+        links.forEach((link) => {
+          const section = document.getElementById(link.dataset.section || "");
+          if (section && section.getBoundingClientRect().top <= guide) current = link.dataset.section || current;
+        });
+        markActive(current);
+      });
+    }, { passive: true });
   }
 </script>

@@ -6,18 +6,24 @@ import AdminLayout from "../layouts/AdminLayout.astro";
     <!-- Acceso -->
     <div id="gate" class="gate">
       <img src="/logo-boda.png" alt="C&J" style="width:80px;margin:0 auto 12px" />
-      <h1 style="font-family:var(--font-serif);font-size:26px">Panel de organizadores</h1>
+      <h1 style="font-family:var(--font-serif);font-size:26px">Acceso al panel</h1>
       <p style="color:var(--color-soft);font-size:13px;margin:6px 0 16px">Ingresa la contraseña</p>
-      <input id="pass" class="a-input" type="password" placeholder="Contraseña" />
-      <div id="err" style="color:#a5604f;font-size:12px;margin-top:8px;display:none">Contraseña incorrecta</div>
-      <button id="enter" class="a-btn" style="width:100%;margin-top:14px">Entrar</button>
+      <input id="pass" class="a-input" type="password" placeholder="Contraseña" autocomplete="current-password" />
+      <div id="err" aria-live="polite" style="color:#a5604f;font-size:12px;margin-top:8px;display:none">Contraseña incorrecta</div>
+      <button id="enter" class="a-btn" type="button" style="width:100%;margin-top:14px">Entrar</button>
     </div>
 
     <!-- Dashboard -->
     <div id="dash" style="display:none">
       <div class="a-head">
-        <div class="eyebrow">Cristian & Jimena · 03.04.2027</div>
-        <h1>Panel de organizadores</h1>
+        <div>
+          <div class="eyebrow">Cristian & Jimena · 03.04.2027</div>
+          <h1>Panel de administración</h1>
+        </div>
+        <div class="a-head-actions">
+          <span id="roleBadge" class="role-badge"></span>
+          <button id="logout" class="a-btn a-secondary" type="button">Cerrar sesión</button>
+        </div>
       </div>
 
       <div class="a-stats" id="stats"></div>
@@ -49,6 +55,7 @@ import AdminLayout from "../layouts/AdminLayout.astro";
 
       <div class="a-panel">
         <h2>Álbum de fotos</h2>
+        <p id="photoPermission" class="photo-permission"></p>
         <div class="a-photos" id="photos"></div>
       </div>
     </div>
@@ -66,18 +73,27 @@ import AdminLayout from "../layouts/AdminLayout.astro";
   async function enter() {
     const p = ($("pass") as HTMLInputElement).value.trim();
     if (!p) return;
-    ($("enter") as HTMLButtonElement).textContent = "...";
+    const enterButton = $("enter") as HTMLButtonElement;
+    enterButton.disabled = true;
+    enterButton.textContent = "Entrando...";
+    $("err").style.display = "none";
     const r = await adminList(p).catch(() => ({ ok: false }));
     if (r && r.ok) {
       PASS = p;
       sessionStorage.setItem("adminpass", p);
       data = r;
+      document.body.dataset.role = r.role || "organizers";
+      $("roleBadge").textContent = r.role === "owners"
+        ? "Acceso completo · Cristian y Jimena"
+        : "Acceso de organizadores · solo consulta";
       $("gate").style.display = "none";
       $("dash").style.display = "block";
       render();
     } else {
+      sessionStorage.removeItem("adminpass");
       $("err").style.display = "block";
-      ($("enter") as HTMLButtonElement).textContent = "Entrar";
+      enterButton.disabled = false;
+      enterButton.textContent = "Entrar";
     }
   }
 
@@ -92,7 +108,7 @@ import AdminLayout from "../layouts/AdminLayout.astro";
   }
 
   function guestUrl(g: any) {
-    return `${location.origin}/?g=${encodeURIComponent(g.token)}`;
+    return `${location.origin}/?g=${encodeURIComponent(g.token)}&v=2`;
   }
 
   function setFeedback(message: string, error = false) {
@@ -195,6 +211,9 @@ import AdminLayout from "../layouts/AdminLayout.astro";
 
     renderRows(($("search") as HTMLInputElement).value || "");
 
+    $("photoPermission").textContent = data.permissions?.delete_photos
+      ? "Tienen acceso completo para administrar las fotos."
+      : "Los organizadores pueden consultar este álbum, pero no borrar fotos.";
     const ph = data.photos || [];
     $("photos").innerHTML = ph.length
       ? ph.map((p: any) => `<div class="a-photo"><img src="${p.url}"><button data-del="${p.id}">Borrar</button></div>`).join("")
@@ -203,7 +222,11 @@ import AdminLayout from "../layouts/AdminLayout.astro";
       b.addEventListener("click", async () => {
         const id = (b as HTMLElement).dataset.del!;
         if (!confirm("¿Borrar esta foto?")) return;
-        await adminDeletePhoto(PASS, id);
+        const result = await adminDeletePhoto(PASS, id).catch(() => ({ ok: false }));
+        if (!result?.ok) {
+          setFeedback("No tienes permiso para borrar esta foto.", true);
+          return;
+        }
         data.photos = (data.photos || []).filter((x: any) => x.id !== id);
         render();
       })
@@ -215,6 +238,10 @@ import AdminLayout from "../layouts/AdminLayout.astro";
   $("search").addEventListener("input", (e) => { if (data) renderRows((e.target as HTMLInputElement).value); });
   $("copyAllLinks").addEventListener("click", copyAllLinks);
   $("downloadLinks").addEventListener("click", downloadLinks);
+  $("logout").addEventListener("click", () => {
+    sessionStorage.removeItem("adminpass");
+    location.reload();
+  });
 
   const saved = sessionStorage.getItem("adminpass");
   if (saved) { ($("pass") as HTMLInputElement).value = saved; enter(); }

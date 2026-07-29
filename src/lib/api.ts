@@ -23,6 +23,6 @@ export const savePhoto = (token: string, autor: string, filename: string, dataUr
   apiPost({ action: "photo", token, autor, filename, dataUrl });
 
 // --- Admin ---
-export const adminList = (pass: string) => apiGet("admin_list", "&pass=" + encodeURIComponent(pass));
+export const adminList = (pass: string) => apiPost({ action: "admin_list", pass });
 export const adminDeletePhoto = (pass: string, id: string) =>
   apiPost({ action: "admin_delete_photo", pass, id });

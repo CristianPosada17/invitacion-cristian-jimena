@@ -73,6 +73,7 @@ body {
   overscroll-behavior-y: contain;
 }
 #app::-webkit-scrollbar { display: none; }
+.landing-section { scroll-margin-top: 18px; }
 
 svg { display: block; }
 .svic { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
