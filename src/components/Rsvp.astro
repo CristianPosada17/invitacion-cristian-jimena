@@ -76,7 +76,14 @@ import Ornament from "./Ornament.astro";
         box.innerHTML =
           '<div class="sec-title">Estás Confirmado</div><div class="sec-sub mb">Nos vemos el 3 de abril</div>' +
           '<p class="center hint mb" style="margin-top:10px">' + esc(guest.nombre) + " · " + p + " " + (p > 1 ? "pases" : "pase") +
-          '.<br>Ve a la sección <b>Detalles</b> para ver tu pase y tu mesa.</p>';
+          '.<br>Ve a la sección <b>Detalles</b> para ver tu pase y tu mesa.</p>' +
+          '<button class="btn ghost mt" type="button" id="goDetails">Ver mi pase y detalles</button>';
+        document.getElementById("goDetails")?.addEventListener("click", () => {
+          const details = document.getElementById("detalles");
+          if (!details) return;
+          details.scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", location.pathname + location.search + "#detalles");
+        });
       } else {
         box.innerHTML =
           '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:23px;margin:0 0 6px">Gracias, ' +
