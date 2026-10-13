@@ -352,19 +352,22 @@ const compassIcon =
     sheet?.setAttribute("aria-hidden", "true");
   }
 
-  // Aparece sola una vez que el invitado ya vio la portada, solo en celulares,
-  // y no vuelve a molestar si dijo "Ya la guardé" (o por 2 días si dijo "Ahora no").
+  // Aparece sola en cuanto se abre la invitación (justo después del sobre), solo en celulares.
+  // "Ya la guardé" la apaga para siempre; "Ahora no" solo por esta visita.
   function shouldAutoOpen() {
     if (standalone || !(isIOS || isAndroid)) return false;
     if (read("pwa-dismissed") === "1") return false;
-    const snooze = Number(read("pwa-snooze") || 0);
-    return Date.now() - snooze > 2 * 86400000;
+    try {
+      return sessionStorage.getItem("pwa-snooze") !== "1";
+    } catch (e) {
+      return true;
+    }
   }
   function scheduleAutoOpen() {
     if (!shouldAutoOpen()) return;
     window.setTimeout(() => {
       if (!sheet?.classList.contains("show")) open();
-    }, 6000);
+    }, 900);
   }
   if (document.getElementById("intro")) {
     document.body.addEventListener("intro:done", scheduleAutoOpen, { once: true });
@@ -390,7 +393,9 @@ const compassIcon =
     close();
   });
   document.getElementById("installLater")?.addEventListener("click", () => {
-    write("pwa-snooze", String(Date.now()));
+    try {
+      sessionStorage.setItem("pwa-snooze", "1");
+    } catch (e) {}
     close();
   });
   document.getElementById("installDone")?.addEventListener("click", () => {
