@@ -1,14 +1,38 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
-const fotos = [
-  { src: "/galeria/jc-13.jpg", alt: "Jimena y Cristian sonriendo juntos" },
-  { src: "/galeria/jc-17.jpg", alt: "Las manos de Jimena y Cristian con el anillo de compromiso" },
-  { src: "/galeria/jc-15.jpg", alt: "Jimena y Cristian bajo un arco de cantera" },
+const pedida = [
+  { src: "/galeria/jc-24.jpg", alt: "La propuesta de matrimonio de Cristian a Jimena" },
+  { src: "/galeria/jc-26.jpg", alt: "Cristian de rodillas pidiéndole matrimonio a Jimena" },
+  { src: "/galeria/jc-25.jpg", alt: "Jimena y Cristian entre luces de celebración" },
   { src: "/galeria/jc-22.jpg", alt: "Jimena y Cristian entre luces" },
+  { src: "/galeria/jc-23.jpg", alt: "Jimena mostrando su anillo de compromiso" },
+];
+const saveTheDate = [
+  { src: "/galeria/jc-01.jpg", alt: "Jimena y Cristian en un salón de cortinas rojas" },
+  { src: "/galeria/jc-13.jpg", alt: "Jimena y Cristian sonriendo juntos" },
+  { src: "/galeria/jc-09.jpg", alt: "Jimena y Cristian abrazados frente al escenario" },
+  { src: "/galeria/jc-15.jpg", alt: "Jimena y Cristian bajo un arco de cantera" },
+  { src: "/galeria/jc-17.jpg", alt: "Las manos de Jimena y Cristian con el anillo de compromiso" },
+  { src: "/galeria/jc-19.jpg", alt: "Jimena y Cristian abrazados en la calle" },
+];
+const capitulos = [
+  { titulo: "La pedida", fotos: pedida },
+  { titulo: "Save the date", fotos: saveTheDate },
 ];
 ---
 <div style="padding:34px 0 0">
   <SectionTitle title="Nuestra Historia" />
+
+  {capitulos.map((capitulo) => (
+    <div class="chapter">
+      <div class="carousel" aria-label={capitulo.titulo}>
+        {capitulo.fotos.map((foto) => (
+          <img class="story-photo" src={foto.src} alt={foto.alt} loading="lazy" decoding="async" />
+        ))}
+      </div>
+    </div>
+  ))}
+  <p class="story-hint">Desliza para ver más momentos</p>
 
   <!-- Save the date: video cinematográfico. Al reproducirlo se pausa la música de fondo. -->
   <div class="std">
@@ -28,17 +52,17 @@ const fotos = [
     </div>
   </div>
 
-  <div class="carousel mt" aria-label="Momentos de Jimena y Cristian">
-    {fotos.map((foto) => (
-      <img class="story-photo" src={foto.src} alt={foto.alt} loading="lazy" decoding="async" />
-    ))}
-  </div>
-  <p class="story-hint">Desliza para ver más momentos</p>
 </div>
 
 <style>
+  .chapter {
+    margin-top: 18px;
+  }
+  .chapter + .chapter {
+    margin-top: 12px;
+  }
   .std {
-    margin: 4px 22px 0;
+    margin: 20px 22px 0;
   }
   .std-frame {
     position: relative;
