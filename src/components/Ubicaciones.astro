@@ -1,24 +1,312 @@
 ---
-// Croquis del salón (para quienes no usan Google Maps). Las sedes y sus mapas viven en Detalles.
+// Croquis ilustrado de Casa Meraki, dibujado con las calles reales de OpenStreetMap
+// (© colaboradores de OpenStreetMap, ODbL). Si el Apps Script trae croquis_url, se muestra esa imagen.
+import monoRaw from "../../public/monograma-jc.svg?raw";
+const monoViewBox = /viewBox="([^"]+)"/.exec(monoRaw)?.[1] ?? "0 0 100 100";
+const monoPath = /\sd="([^"]+)"/.exec(monoRaw)?.[1] ?? "";
+const MERAKI_MAPS = "https://maps.app.goo.gl/zRbWCMWQZYUAJLxd6";
 ---
 <div class="wrap" style="padding-top:18px">
-  <div class="card" id="croquisCard">
-    <div class="eyebrow mb">Croquis · Cómo llegar</div>
-    <img id="croquisImg" alt="Croquis del salón" style="width:100%;border-radius:10px;display:none" />
-    <div id="croquisPh" class="locked" style="margin:0">El croquis del salón estará disponible pronto</div>
+  <div class="card croquis-card" id="croquisCard">
+    <div class="eyebrow">Croquis del salón</div>
+    <div class="croquis-map" id="croquisMap">
+<svg class="croquis-svg" viewBox="0 0 600 691" role="img" aria-labelledby="croquisTitle">
+  <title id="croquisTitle">Croquis para llegar al Salón Casa Meraki</title>
+  <defs>
+    <pattern id="croquisPaper" width="26" height="26" patternUnits="userSpaceOnUse">
+      <rect width="26" height="26" fill="#fbf6ec"></rect>
+      <circle cx="4" cy="6" r=".7" fill="#e3d6bb"></circle>
+      <circle cx="17" cy="19" r=".6" fill="#e8dcc3"></circle>
+    </pattern>
+    <radialGradient id="croquisGlow" cx="0.497" cy="0.623" r="0.35">
+      <stop offset="0" stop-color="#e6d4ab" stop-opacity=".75"></stop>
+      <stop offset="1" stop-color="#e6d4ab" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="pinWax" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#f3dc9b"></stop>
+      <stop offset=".4" stop-color="#cfa65a"></stop>
+      <stop offset="1" stop-color="#7a5822"></stop>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="691" fill="url(#croquisPaper)"></rect>
+  <rect width="600" height="691" fill="url(#croquisGlow)"></rect>
+
+  <g class="roads">
+    <path class="svc" d="M129.6,736.4 L133.1,737.2 L141.5,737.9 L142.9,737.5 L143.8,736.6 L145.9,726.8 L145.5,725.4 L144.6,724.6 L136.8,720.0 L133.6,719.1"></path>
+    <path class="svc" d="M267.9,694.1 L270.9,697.1 L274.8,700.1 L278.9,701.9 L284.8,705.0 L287.4,706.4 L290.0,707.1 L292.0,707.6 L299.7,708.8 L304.4,709.6 L306.6,709.8 L307.9,709.7 L308.6,709.2 L309.1,708.3 L309.3,706.8 L309.4,704.7 L309.2,703.3 L308.8,702.0 L308.0,701.1 L305.9,700.4 L294.0,696.8 L285.8,694.4 L281.7,693.7 L278.8,693.2 L275.8,693.1 L273.0,693.4 L267.9,694.1"></path>
+    <path class="svc" d="M145.8,664.4 L117.3,657.5 L114.5,656.4 L112.9,655.0 L112.5,653.1 L112.6,651.0 L114.0,647.5 L115.4,646.4 L117.3,645.9 L119.6,646.2 L130.4,647.8 L133.3,648.2 L136.6,648.9 L149.0,651.8"></path>
+    <path class="svc" d="M151.5,654.5 L154.9,655.4 L156.8,655.9 L166.0,661.4 L172.1,664.6 L179.1,667.7 L195.6,674.8 L202.3,677.7 L244.4,691.5 L247.1,692.5 L250.1,692.8 L262.0,692.1 L263.3,692.1 L264.9,692.6 L267.9,694.1"></path>
+    <path class="res" d="M147.2,310.3 L173.0,328.6 L175.0,329.8 L176.8,330.1 L178.8,330.1"></path>
+    <path class="res" d="M178.8,330.1 L188.0,328.9"></path>
+    <path class="res" d="M257.3,357.6 L252.3,355.4 L214.6,340.4 L192.8,329.4 L190.5,328.9 L188.0,328.9"></path>
+    <path class="res" d="M395.1,-86.0 L395.3,-73.1 L395.4,-71.1 L395.8,-68.3 L399.6,-50.2 L404.0,-40.4 L404.6,-37.9 L404.8,-35.5 L405.1,-34.3 L407.8,-27.8"></path>
+    <path class="res" d="M334.2,45.5 L348.2,27.0 L358.3,14.3 L370.2,1.1 L381.7,-11.2 L387.4,-16.2 L393.0,-19.9 L407.8,-27.8 L422.6,-34.6 L427.5,-36.3 L433.5,-38.7 L437.8,-38.3 L446.0,-39.1 L465.3,-42.8 L470.6,-42.9 L482.2,-44.8 L488.5,-45.8 L496.7,-46.9 L518.4,-48.6"></path>
+    <path class="res" d="M331.8,-208.5 L334.6,-208.1 L337.1,-206.9 L338.9,-205.0 L353.1,-187.2 L368.5,-164.2 L386.1,-136.5 L404.4,-109.5 L412.9,-96.6 L421.5,-84.0 L422.3,-81.7 L423.0,-79.2 L423.7,-64.5 L424.1,-61.3 L424.8,-57.8 L426.1,-53.3 L428.4,-48.0 L431.2,-42.6 L433.5,-38.7"></path>
+    <path class="res" d="M338.5,-39.7 L366.7,-44.7 L384.4,-47.7 L399.6,-50.2"></path>
+    <path class="res" d="M-189.0,511.9 L-151.7,487.8 L-142.8,482.0 L-140.6,480.3 L-137.9,478.1 L-125.2,470.0 L-111.9,461.7 L-57.8,426.9 L-56.8,425.8 L-56.4,424.5 L-57.2,407.3 L-55.0,406.5 L-31.5,402.0 L-24.2,401.6"></path>
+    <path class="res" d="M-91.5,507.9 L-88.5,509.9 L-83.4,513.9 L-80.2,516.8 L-77.3,520.2 L-73.8,525.1 L-71.7,531.1 L-70.4,537.0 L-69.9,543.2 L-70.1,565.2 L-70.0,569.1 L-68.9,572.0 L-67.4,574.5 L-65.0,576.7 L-42.8,593.9 L-15.9,614.5 L-5.3,622.2 L-0.7,626.7 L2.8,630.8 L6.7,635.0 L8.8,638.1 L9.7,641.0 L10.4,646.1 L11.1,648.9 L12.6,651.3 L14.8,652.6 L42.4,662.8 L138.0,699.4"></path>
+    <path class="res" d="M132.5,723.6 L92.1,708.3 L67.5,699.5 L42.3,690.7 L39.4,689.5 L37.7,687.8"></path>
+    <path class="res" d="M125.1,757.4 L113.4,752.9 L88.5,744.0 L65.8,735.7 L53.0,731.1 L38.7,724.6 L25.0,719.4 L17.1,717.4 L8.5,714.5 L7.0,713.5 L4.6,709.9 L3.5,709.2 L1.9,708.8 L-0.4,708.4 L-2.0,708.1 L-3.0,707.7"></path>
+    <path class="res" d="M153.3,646.2 L222.9,669.6 L295.5,694.8 L313.1,700.9 L321.9,704.3 L330.1,706.7 L336.7,708.4 L340.7,709.7 L348.3,712.7 L350.8,713.4 L356.1,714.5 L357.9,715.1 L373.3,721.1 L378.0,723.3 L382.4,725.2 L386.8,726.6 L390.3,727.5 L393.1,727.9 L395.6,727.2 L399.1,725.5 L402.8,722.5 L404.3,721.9 L406.8,721.7 L416.4,721.4 L422.1,720.3 L430.9,717.6 L435.2,717.4 L437.7,718.2 L439.2,719.9 L440.0,722.7 L439.5,725.9 L438.2,730.4 L438.1,732.8 L439.0,735.4 L440.3,737.7 L442.9,741.8 L447.8,746.3"></path>
+    <path class="res" d="M380.7,389.5 L362.8,434.2 L336.6,500.9"></path>
+    <path class="res" d="M273.7,317.3 L303.6,328.9 L330.7,339.5"></path>
+    <path class="res" d="M297.6,508.2 L313.7,468.9 L320.9,452.5 L325.5,440.9 L340.1,404.4 L354.4,369.7"></path>
+    <path class="res" d="M361.9,530.6 L363.4,532.6 L365.4,534.1 L392.9,548.2 L412.3,558.2 L460.1,582.1"></path>
+    <path class="res" d="M384.1,467.3 L383.7,470.8 L382.7,474.9 L373.9,495.6 L361.8,524.3 L361.4,526.2 L361.4,528.6 L361.9,530.6"></path>
+    <path class="res" d="M329.6,133.0 L279.4,119.6 L274.6,118.0 L272.0,115.4 L270.3,111.3 L271.6,77.0 L270.5,73.2 L267.9,70.3 L262.6,65.0 L260.9,61.8 L260.3,58.7 L258.9,38.4 L259.6,29.1 L260.7,19.0 L264.6,-12.5 L266.1,-25.4 L267.0,-38.2 L267.0,-43.6 L267.1,-62.1 L267.3,-77.5 L267.6,-86.8 L268.8,-94.3 L272.0,-104.5 L279.0,-123.0 L283.2,-135.5 L284.3,-142.0 L284.3,-148.9 L283.9,-152.1 L282.0,-162.1 L281.7,-167.2 L282.0,-171.2 L283.3,-181.9 L284.7,-189.8 L290.0,-212.5 L292.2,-220.1"></path>
+    <path class="res" d="M-348.6,267.5 L-294.4,263.8 L-256.3,261.3 L-219.4,258.6 L-190.4,256.4 L-153.7,254.1 L-116.2,252.0 L-86.3,250.5 L-69.1,249.3 L-50.8,247.9 L-27.4,245.9 L-9.9,244.9 L-4.3,245.3 L-1.8,246.5 L-0.0,248.5 L3.8,253.8 L6.0,258.2 L8.5,267.4 L8.6,269.9 L7.4,272.3 L5.1,275.8 L3.7,278.7 L3.4,280.9 L4.0,283.3 L4.8,285.0 L9.5,292.4 L10.9,293.4 L12.3,293.9 L15.3,293.6 L21.4,293.6 L25.5,293.9 L28.0,294.7 L29.9,295.8 L31.2,297.6 L31.8,300.9 L32.3,304.4 L34.0,309.4 L39.7,320.4 L41.6,321.5 L44.1,321.5 L49.4,320.4 L57.6,317.6 L67.2,314.0 L78.8,308.8 L88.4,303.0 L101.6,294.3 L105.8,291.7 L109.3,289.9 L112.8,289.0 L119.1,288.7 L124.8,289.0 L127.9,289.8 L131.6,291.7 L133.7,293.9 L137.1,300.8 L137.9,303.2 L139.6,305.3 L147.2,310.3"></path>
+    <path class="res" d="M335.6,18.3 L332.0,17.2 L329.1,16.7 L321.9,15.8 L312.4,15.2"></path>
+    <path class="res" d="M338.7,-42.6 L336.2,-39.5 L335.2,-37.7 L335.2,-36.2 L334.9,-32.3 L335.5,-28.7 L337.8,-22.3"></path>
+    <path class="res" d="M267.0,-43.6 L274.5,-40.0 L284.6,-36.4 L290.0,-34.5 L291.9,-34.0 L294.2,-34.7"></path>
+    <path class="res" d="M422.6,-34.6 L424.6,-11.8 L425.1,-10.8 L426.0,-10.1"></path>
+    <path class="res" d="M453.9,-24.9 L476.3,-29.7"></path>
+    <path class="res" d="M470.6,-42.9 L476.3,-29.7 L481.8,-16.9 L483.6,-12.5 L483.7,-12.0"></path>
+    <path class="res" d="M155.3,637.5 L158.9,637.7 L163.1,637.9 L165.7,637.9 L168.4,636.8 L171.1,635.4 L174.0,634.5 L177.4,634.3 L187.2,634.7 L190.3,635.4 L193.8,636.5 L195.9,636.9 L198.3,636.3 L204.2,634.3 L207.4,633.8 L218.5,633.0 L227.8,632.9 L229.5,632.7 L230.8,632.0 L235.4,628.9 L237.0,627.3 L237.4,626.1 L238.5,624.8 L239.5,624.2 L241.3,624.0 L243.2,624.6 L258.9,634.3 L263.2,637.4 L264.7,639.1 L265.3,640.5 L266.3,644.8 L267.0,646.4 L268.3,647.7 L269.7,648.5 L277.6,651.6 L290.0,656.9 L320.7,669.0 L336.4,674.8 L341.2,676.3 L345.1,677.2 L355.3,679.0 L358.5,679.9 L371.9,684.6 L373.9,685.8 L375.4,684.7"></path>
+    <path class="res" d="M168.5,576.2 L173.4,576.3 L176.0,576.7 L179.5,577.9 L192.1,582.2 L216.9,591.6 L223.3,594.7 L227.2,596.2 L232.2,597.6 L235.6,598.9 L262.3,610.4 L270.7,614.1 L273.6,615.8 L275.9,617.0 L277.9,617.7 L279.9,617.9 L284.2,618.4 L286.2,619.1 L289.0,620.7 L294.0,623.7 L297.8,625.3 L307.7,628.6"></path>
+    <path class="res" d="M373.9,495.6 L380.2,502.2 L383.5,505.7 L385.1,507.1 L387.3,507.9 L399.8,513.2 L402.4,515.0 L404.0,516.9 L404.4,518.6"></path>
+    <path class="res" d="M268.6,415.9 L288.0,369.5 L303.6,328.9"></path>
+    <path class="res" d="M483.7,-12.0 L483.5,-11.7 L483.2,-11.5 L472.4,-8.5"></path>
+    <path class="res" d="M426.0,-10.1 L427.9,-9.8 L445.7,-13.2"></path>
+    <path class="res" d="M294.2,-34.7 L297.8,-35.4 L301.6,-36.2 L305.1,-36.3 L314.9,-36.3 L335.2,-36.2"></path>
+    <path class="res" d="M529.2,-28.7 L528.9,-28.1 L528.1,-28.0 L527.2,-28.3 L524.6,-29.9 L522.3,-30.4 L520.3,-30.0 L516.8,-29.0 L511.9,-26.5 L511.0,-25.5 L509.9,-23.1 L508.5,-21.0 L507.3,-20.2 L506.2,-19.9 L499.7,-19.2 L494.5,-18.8 L489.3,-18.3 L486.1,-17.9 L481.8,-16.9"></path>
+    <path class="res" d="M375.4,684.7 L378.5,688.6 L379.2,694.8 L379.4,698.0 L379.3,701.4 L377.4,706.2 L377.2,709.2 L373.3,721.1"></path>
+    <path class="res" d="M404.4,518.6 L404.3,521.8 L403.6,524.9 L402.1,528.7 L392.9,548.2"></path>
+    <path class="res" d="M317.3,374.9 L340.1,404.4 L362.8,434.2 L382.3,461.0 L383.5,464.0 L384.1,467.3"></path>
+    <path class="res" d="M-3.0,707.7 L-3.7,706.9 L-4.0,705.7 L-2.3,679.4 L2.8,630.8"></path>
+    <path class="res" d="M37.7,687.8 L37.1,685.9 L37.0,684.1 L42.4,662.8"></path>
+    <path class="link" d="M169.6,570.6 L176.4,555.3 L191.2,519.4 L204.5,487.6 L211.8,468.8 L216.6,457.6 L219.8,450.5 L227.8,433.1 L237.1,412.4 L243.5,398.4 L250.1,379.3"></path>
+    <path class="link" d="M182.9,495.3 L180.5,499.0 L179.1,501.5 L177.9,503.0 L175.8,504.6 L173.6,505.7 L170.8,505.9 L168.3,505.5 L166.1,504.2 L164.5,502.4 L163.6,500.7"></path>
+    <path class="link" d="M254.0,361.5 L247.6,375.9 L240.8,391.0 L239.0,395.0 L237.4,398.0 L235.3,401.1 L232.9,404.0 L230.5,406.7 L205.8,430.6"></path>
+    <path class="link" d="M240.8,391.0 L234.5,398.0 L230.4,402.4 L222.8,410.0 L219.7,412.3 L216.1,413.7 L212.7,414.4 L208.7,414.3 L205.4,413.4 L202.1,411.3 L199.9,408.2 L198.4,404.1 L197.7,400.4 L196.4,393.5 L195.5,387.1 L193.5,382.1"></path>
+    <path class="link" d="M184.3,455.1 L207.5,432.6"></path>
+    <path class="link" d="M207.5,432.6 L232.0,408.8 L235.0,405.6 L237.6,402.4 L239.9,399.4 L241.7,396.4 L244.0,391.9 L250.1,379.3 L255.3,366.6 L256.6,362.4"></path>
+    <path class="link" d="M183.4,452.5 L175.0,460.7 L170.4,465.4 L167.1,469.5 L164.6,473.9 L162.6,478.3 L161.2,483.2 L160.4,488.7 L160.3,494.8 L161.2,501.5"></path>
+    <path class="link" d="M205.8,430.6 L183.4,452.5"></path>
+    <path class="link" d="M163.6,500.7 L162.8,497.3 L162.4,493.3 L162.4,489.5 L162.7,486.1 L163.3,483.0 L164.8,478.5 L166.8,474.4 L169.2,470.7 L171.7,467.5 L175.7,463.2 L184.3,455.1"></path>
+    <path class="link" d="M161.2,501.5 L162.1,506.8 L166.5,527.9 L167.4,534.0 L167.6,552.5 L167.7,563.7"></path>
+    <path class="link" d="M256.6,362.4 L257.3,357.6"></path>
+    <path class="link" d="M257.3,357.6 L254.0,361.5"></path>
+    <path class="sec" d="M257.3,357.6 L265.1,338.3 L273.7,317.3 L285.1,288.8 L299.1,254.5 L308.1,231.9 L320.3,201.0 L322.1,194.8 L323.5,189.7 L326.0,177.1 L326.9,170.7 L327.7,162.6 L329.6,133.0 L331.2,102.7 L333.4,63.0 L334.2,45.5"></path>
+    <path class="sec" d="M334.2,45.5 L335.6,18.3 L337.8,-22.3 L338.5,-39.7 L338.7,-42.6 L339.3,-53.7 L339.7,-61.1 L340.4,-70.2 L341.3,-78.8 L342.7,-86.5 L344.6,-93.3 L348.6,-101.8 L353.0,-109.5 L354.4,-110.6 L359.0,-115.7 L364.6,-120.8 L367.0,-122.8 L386.1,-136.5 L410.0,-152.8 L432.6,-167.4 L445.1,-175.6 L468.1,-190.7 L481.0,-199.3 L497.3,-210.1 L512.3,-220.1"></path>
+    <path class="hw-edge" d="M158.5,156.1 L172.8,247.9"></path>
+    <path class="hw-edge" d="M154.3,125.3 L158.5,156.1"></path>
+    <path class="hw-edge" d="M178.4,-51.0 L168.2,2.2 L157.2,57.9 L154.0,76.1 L153.0,84.4 L152.6,92.2 L152.5,102.4 L153.1,111.9 L154.3,125.3"></path>
+    <path class="hw-edge" d="M172.8,247.9 L176.0,271.5"></path>
+    <path class="hw-edge" d="M176.0,271.5 L183.1,321.6 L185.1,335.0"></path>
+    <path class="hw-edge" d="M185.1,335.0 L184.7,342.7 L189.4,376.0 L191.1,390.3 L192.9,403.8 L193.7,414.2 L193.7,423.0 L193.4,435.2 L191.8,449.7 L189.7,460.3 L186.3,478.7 L182.9,495.3 L180.3,506.1"></path>
+    <path class="hw-edge" d="M180.3,506.1 L167.7,563.7 L165.5,575.6 L162.4,590.3 L157.8,612.5 L152.4,637.8 L150.5,645.5 L149.0,651.8 L145.8,664.4 L138.0,699.4 L133.6,719.1 L132.5,723.6 L129.6,736.4 L125.1,757.4 L99.8,872.3"></path>
+    <path class="hw-edge" d="M183.6,506.4 L186.6,493.4 L190.1,476.4 L193.0,460.4 L195.0,449.5 L196.7,434.8 L197.2,425.5 L197.0,416.7 L196.4,407.0 L195.2,395.6 L193.5,382.1 L192.4,375.2 L190.0,357.8 L187.6,342.2 L185.1,335.0"></path>
+    <path class="hw-edge" d="M102.4,872.9 L116.7,810.1 L128.4,758.0 L133.1,737.2 L136.8,720.0 L141.2,700.5 L148.2,669.3 L151.5,654.5 L153.3,646.2 L155.3,637.5 L160.8,613.2 L165.5,590.2 L168.5,576.2 L169.6,570.6 L170.8,564.3 L183.6,506.4"></path>
+    <path class="hw" d="M158.5,156.1 L172.8,247.9"></path>
+    <path class="hw" d="M154.3,125.3 L158.5,156.1"></path>
+    <path class="hw" d="M178.4,-51.0 L168.2,2.2 L157.2,57.9 L154.0,76.1 L153.0,84.4 L152.6,92.2 L152.5,102.4 L153.1,111.9 L154.3,125.3"></path>
+    <path class="hw" d="M172.8,247.9 L176.0,271.5"></path>
+    <path class="hw" d="M176.0,271.5 L183.1,321.6 L185.1,335.0"></path>
+    <path class="hw" d="M185.1,335.0 L184.7,342.7 L189.4,376.0 L191.1,390.3 L192.9,403.8 L193.7,414.2 L193.7,423.0 L193.4,435.2 L191.8,449.7 L189.7,460.3 L186.3,478.7 L182.9,495.3 L180.3,506.1"></path>
+    <path class="hw" d="M180.3,506.1 L167.7,563.7 L165.5,575.6 L162.4,590.3 L157.8,612.5 L152.4,637.8 L150.5,645.5 L149.0,651.8 L145.8,664.4 L138.0,699.4 L133.6,719.1 L132.5,723.6 L129.6,736.4 L125.1,757.4 L99.8,872.3"></path>
+    <path class="hw" d="M183.6,506.4 L186.6,493.4 L190.1,476.4 L193.0,460.4 L195.0,449.5 L196.7,434.8 L197.2,425.5 L197.0,416.7 L196.4,407.0 L195.2,395.6 L193.5,382.1 L192.4,375.2 L190.0,357.8 L187.6,342.2 L185.1,335.0"></path>
+    <path class="hw" d="M102.4,872.9 L116.7,810.1 L128.4,758.0 L133.1,737.2 L136.8,720.0 L141.2,700.5 L148.2,669.3 L151.5,654.5 L153.3,646.2 L155.3,637.5 L160.8,613.2 L165.5,590.2 L168.5,576.2 L169.6,570.6 L170.8,564.3 L183.6,506.4"></path>
+    <path class="route" d="M334.6,328.6 L330.7,339.5 L317.3,374.9 L304.9,405.9 L292.5,438.3 L289.3,448.0 L287.7,455.6 L286.3,460.1 L271.3,498.0"></path>
+  </g>
+
+  <!-- Etiquetas -->
+  <g class="lbl">
+    <text transform="translate(122 606) rotate(-80)" class="lbl-road">CARRETERA A PARRAL</text>
+    <text x="190" y="40" class="lbl-dir">↑ Parral</text>
+    <text x="168" y="672" class="lbl-dir">↓ Durango centro</text>
+    <text x="330" y="118" class="lbl-small">Distribuidor</text>
+    <text x="330" y="142" class="lbl-small">Presa Peña del Águila</text>
+  </g>
+
+  <!-- Brújula -->
+  <g transform="translate(548 70)" class="compass">
+    <circle r="30"></circle>
+    <path d="M0,-21 L6,0 L0,-4 L-6,0 Z" class="needle-n"></path>
+    <path d="M0,21 L6,0 L0,4 L-6,0 Z" class="needle-s"></path>
+    <text y="-38" text-anchor="middle">N</text>
+  </g>
+
+  <!-- Escala -->
+  <g transform="translate(514 661)" class="scale">
+    <path d="M0,0 H62 M0,-5 V5 M62,-5 V5"></path>
+    <text x="31" y="-9" text-anchor="middle">200 m</text>
+  </g>
+
+  <!-- Casa Meraki -->
+  <g transform="translate(298.1 430.3)">
+    <circle class="pin-pulse" r="16"></circle>
+    <g class="pin" transform="scale(1.35)">
+      <path d="M0,0 C-14,-18 -20,-27 -20,-38 A20,20 0 1 1 20,-38 C20,-27 14,-18 0,0 Z" fill="url(#pinWax)"></path>
+      <circle cy="-38" r="13.5" fill="#fffaf0"></circle>
+      <svg x="-9" y="-49" width="18" height="21" viewBox={monoViewBox}>
+        <path d={monoPath} fill-rule="evenodd" fill="#a47c38"></path>
+      </svg>
+    </g>
+  </g>
+  <g transform="translate(330 448)" class="venue-card">
+    <rect x="0" y="0" width="262" height="82" rx="14"></rect>
+    <text x="18" y="38" class="venue-name">Casa Meraki</text>
+    <text x="18" y="64" class="venue-sub">Civil 8 PM · Recepción 9 PM</text>
+  </g>
+</svg>
+    </div>
+    <img id="croquisImg" alt="Croquis del salón" style="width:100%;border-radius:12px;display:none" />
+    <ol class="croquis-steps">
+      <li>Toma la <b>Carretera a Parral</b> saliendo de Durango hacia el norte; el salón está a unos 15 km del centro.</li>
+      <li>Al llegar al <b>Distribuidor Presa Peña del Águila</b>, el salón queda a tu <b>derecha</b>, a unos 300 m de la carretera.</li>
+      <li>Busca la calle marcada en dorado: ahí está <b>Casa Meraki</b>.</li>
+    </ol>
+    <!-- Abre el mismo menú de Detalles: Google Maps, Apple Maps o Waze -->
+    <button
+      type="button"
+      class="btn ghost croquis-open"
+      data-map-name="Salón Casa Meraki"
+      data-map-google={MERAKI_MAPS}
+      data-map-apple="https://maps.apple.com/?q=Casa%20Meraki&ll=24.154039,-104.7045603"
+      data-map-waze="https://waze.com/ul?ll=24.154039,-104.7045603&navigate=yes"
+    >Abrir ubicación exacta</button>
+    <p class="croquis-credit">Mapa ilustrado con datos de © OpenStreetMap</p>
   </div>
 </div>
+
+<style>
+  .croquis-card .eyebrow {
+    margin-bottom: 12px;
+  }
+  .croquis-map {
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.6);
+  }
+  .croquis-map :global(.croquis-svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .croquis-map :global(.roads path) {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .croquis-map :global(.svc) { stroke: #ded2b8; stroke-width: 1.6; stroke-dasharray: 4 4; }
+  .croquis-map :global(.res) { stroke: #d2c3a3; stroke-width: 3.2; }
+  .croquis-map :global(.link) { stroke: #c2ab80; stroke-width: 4; }
+  .croquis-map :global(.sec) { stroke: #b39565; stroke-width: 6.5; }
+  .croquis-map :global(.hw-edge) { stroke: #6b5130; stroke-width: 12; }
+  .croquis-map :global(.hw) { stroke: #f6ead0; stroke-width: 7.5; }
+  .croquis-map :global(.route) {
+    stroke: #b8965a;
+    stroke-width: 6;
+    stroke-dasharray: 10 7;
+    animation: croquisRoute 1.4s linear infinite;
+  }
+  @keyframes croquisRoute {
+    to { stroke-dashoffset: -34; }
+  }
+  .croquis-map :global(text) {
+    font-family: var(--font-sans);
+  }
+  .croquis-map :global(.lbl-road) {
+    fill: #6b5130;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 3px;
+  }
+  .croquis-map :global(.lbl-dir) {
+    fill: #4a3b28;
+    font-size: 26px;
+    font-weight: 500;
+    paint-order: stroke;
+    stroke: #fbf6ec;
+    stroke-width: 7px;
+  }
+  .croquis-map :global(.lbl-small) {
+    fill: #8d7553;
+    font-size: 21px;
+    font-style: italic;
+    paint-order: stroke;
+    stroke: #fbf6ec;
+    stroke-width: 7px;
+  }
+  .croquis-map :global(.compass circle) { fill: #fffaf0; stroke: #c2a463; stroke-width: 1.2; }
+  .croquis-map :global(.needle-n) { fill: #987740; }
+  .croquis-map :global(.needle-s) { fill: #d8c9a7; }
+  .croquis-map :global(.compass text) { fill: #987740; font-size: 18px; font-weight: 500; }
+  .croquis-map :global(.scale path) { stroke: #6b5130; stroke-width: 3; fill: none; }
+  .croquis-map :global(.scale text) { fill: #6b5130; font-size: 19px; }
+  .croquis-map :global(.pin) { filter: drop-shadow(0 4px 4px rgba(59, 42, 16, 0.4)); }
+  .croquis-map :global(.pin-pulse) {
+    fill: rgba(184, 150, 90, 0.35);
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: croquisPulse 2s ease-out infinite;
+  }
+  @keyframes croquisPulse {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+  .croquis-map :global(.venue-card rect) {
+    fill: #fffdf8;
+    stroke: #c2a463;
+    stroke-width: 1.2;
+    filter: drop-shadow(0 6px 10px rgba(74, 65, 54, 0.25));
+  }
+  .croquis-map :global(.venue-name) {
+    fill: #4a3b28;
+    font-family: var(--font-serif);
+    font-size: 30px;
+    font-weight: 600;
+  }
+  .croquis-map :global(.venue-sub) {
+    fill: #8d7553;
+    font-size: 17px;
+  }
+  .croquis-steps {
+    margin: 16px 0 14px;
+    padding: 0 0 0 20px;
+    color: var(--color-ink);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .croquis-steps li + li {
+    margin-top: 6px;
+  }
+  .croquis-steps li::marker {
+    color: var(--color-gold-d);
+    font-weight: 500;
+  }
+  .croquis-steps b {
+    font-weight: 500;
+  }
+  .croquis-open {
+    padding: 12px;
+    font-size: 12px;
+  }
+  .croquis-credit {
+    margin: 10px 0 0;
+    color: var(--color-soft);
+    font-size: 9.5px;
+    text-align: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .croquis-map :global(.route),
+    .croquis-map :global(.pin-pulse) {
+      animation: none;
+    }
+  }
+</style>
 
 <script>
   import { boot } from "../lib/state";
 
+  // Si los novios suben un croquis oficial (croquis_url en el Apps Script), reemplaza al ilustrado.
   boot().then((s) => {
     const url = s.config?.croquis_url;
-    if (url) {
-      const img = document.getElementById("croquisImg") as HTMLImageElement | null;
-      const ph = document.getElementById("croquisPh");
-      if (img) { img.src = url; img.style.display = "block"; }
-      if (ph) ph.style.display = "none";
-    }
+    if (!url) return;
+    const img = document.getElementById("croquisImg") as HTMLImageElement | null;
+    const map = document.getElementById("croquisMap");
+    if (img) { img.src = url; img.style.display = "block"; }
+    if (map) map.style.display = "none";
   });
 </script>
