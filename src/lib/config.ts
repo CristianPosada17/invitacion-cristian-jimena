@@ -17,7 +17,8 @@ export const WEATHER_LOCATION = {
 };
 
 // Fecha del evento (para el contador y el revelado de pases/mesa)
-export const WEDDING = new Date("2027-04-03T17:00:00");
+// Hora de Durango (UTC-6, sin horario de verano) para que el contador sea exacto desde cualquier país.
+export const WEDDING = new Date("2027-04-03T17:00:00-06:00");
 export const REVEAL_DAYS_DEFAULT = 15;
 
 // El token del link personalizado (?g=...). Se conserva en la sesión para

@@ -45,16 +45,16 @@ import SectionTitle from "./SectionTitle.astro";
       '<div class="card center mb"><div class="eyebrow">Confirmado</div><h3 style="font-family:var(--font-serif);font-size:25px;margin:6px 0 2px">' +
       esc(guest.nombre) + '</h3><span class="pill">' + pases + " " + (pases > 1 ? "pases" : "pase") + "</span></div>" +
       '<div class="countdown">' + cdHTML() + "</div>" +
-      '<p class="center hint mb">' + (rev ? "Ya casi es el gran día." : "Tus pases y tu mesa se activan entre 15 y 5 días antes del evento.") + "</p>";
+      '<p class="center hint mb">' + (rev ? "Ya casi es el gran día." : "Tus pases y tu mesa se activan " + revealDays + " días antes del evento.") + "</p>";
     if (!rev) {
       h +=
-        '<div class="locked"><div class="ico">' + icon("ticket") + '</div><b>Tus pases</b><br><span class="hint">Se activan entre 15 y 5 días antes</span></div>' +
-        '<div class="locked"><div class="ico">' + icon("plate") + '</div><b>Tu mesa</b><br><span class="hint">Se activa entre 15 y 5 días antes</span></div>';
+        '<div class="locked"><div class="ico">' + icon("ticket") + '</div><b>Tus pases</b><br><span class="hint">Se activan ' + revealDays + ' días antes</span></div>' +
+        '<div class="locked"><div class="ico">' + icon("plate") + '</div><b>Tu mesa</b><br><span class="hint">Se activa ' + revealDays + ' días antes</span></div>';
     } else {
       h +=
         '<div class="pass"><div class="eyebrow">Pase de entrada</div><div class="n">' + esc(guest.nombre) + "</div>" +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px"><div><span class="hint">Admite</span><br><b style="font-family:var(--font-serif);font-size:25px;color:var(--color-gold-d)">' + pases + ' personas</b></div><div style="text-align:right"><span class="hint">Boda C&amp;J</span><br><b style="font-family:var(--font-serif);font-size:19px">03·04·27</b></div></div></div>' +
-        '<div class="card center"><div class="eyebrow">Tu mesa</div><div class="tablebig">' + (guest.mesa || "—") + '</div><p class="hint">' + (guest.mesa ? "Mesa " + esc(guest.mesa) + " · un anfitrión te llevará a tu lugar" : "Un anfitrión te llevará a tu lugar") + "</p></div>";
+        '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px"><div><span class="hint">Admite</span><br><b style="font-family:var(--font-serif);font-size:25px;color:var(--color-gold-d)">' + pases + ' personas</b></div><div style="text-align:right"><span class="hint">Boda J&amp;C</span><br><b style="font-family:var(--font-serif);font-size:19px">03·04·27</b></div></div></div>' +
+        '<div class="card center"><div class="eyebrow">Tu mesa</div><div class="tablebig foil deep">' + (guest.mesa || "—") + '</div><p class="hint">' + (guest.mesa ? "Mesa " + esc(guest.mesa) + " · un anfitrión te llevará a tu lugar" : "Un anfitrión te llevará a tu lugar") + "</p></div>";
     }
     el.innerHTML = h;
   }

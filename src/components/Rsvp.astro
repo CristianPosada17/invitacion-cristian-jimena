@@ -113,7 +113,10 @@ import Ornament from "./Ornament.astro";
     window.setTimeout(() => canvas.remove(), 3600);
   }
 
+  let sending = false;
+
   async function submit() {
+    if (sending) return;
     const guest = state.guest;
     const token = getToken();
     const attending = pickAsiste;
@@ -121,9 +124,17 @@ import Ornament from "./Ornament.astro";
     const pases = attending ? Number(sel?.value) || 0 : 0;
     if (attending && !pases) { toast("Selecciona el número de pases"); return; }
     const tel = (document.getElementById("f-tel") as HTMLInputElement | null)?.value || "";
-    toast("Enviando...");
+    const button = document.getElementById("btnRsvp") as HTMLButtonElement | null;
+    // Apps Script tarda unos segundos: bloqueamos el botón para evitar envíos dobles.
+    sending = true;
+    if (button) { button.disabled = true; button.textContent = "Enviando…"; }
+    const restore = () => {
+      sending = false;
+      if (button) { button.disabled = false; button.textContent = "Enviar confirmación"; }
+    };
     try {
       const r = await submitRsvp(token, attending, pases, tel.trim());
+      sending = false;
       if (r && r.ok) {
         guest.confirmado = true;
         guest.asiste = attending;
@@ -132,8 +143,9 @@ import Ornament from "./Ornament.astro";
         document.body.dispatchEvent(new CustomEvent("rsvp:done"));
         if (attending) window.setTimeout(celebrateAttendance, 120);
         toast(attending ? "¡Confirmado! Gracias" : "Registrado, gracias");
-      } else toast("No se pudo guardar, intenta de nuevo");
+      } else { restore(); toast("No se pudo guardar, intenta de nuevo"); }
     } catch (e) {
+      restore();
       toast("Sin conexión, intenta de nuevo");
     }
   }
@@ -142,6 +154,8 @@ import Ornament from "./Ornament.astro";
     if (!box) return;
     const token = getToken();
     const guest = state?.guest;
+    // Punto dorado en "Confirmar" de la barra inferior mientras falte la respuesta.
+    document.body.dataset.rsvp = guest && !guest.confirmado ? "pending" : "done";
     if (!token) {
       box.innerHTML =
         '<div class="card center"><h3 style="font-family:var(--font-serif);font-size:22px;margin:0 0 6px">Confirma tu Asistencia</h3><p class="hint">Abre tu invitación desde el <b>link personalizado</b> que te enviamos por WhatsApp para poder confirmar.</p></div>';
@@ -183,13 +197,14 @@ import Ornament from "./Ornament.astro";
     let opts = '<option value="">Selecciona</option>';
     for (let i = 1; i <= (guest.max_pases || 1); i++) opts += "<option>" + i + "</option>";
     box.innerHTML =
+      '<div class="rsvp-kicker">Te esperamos</div>' +
       '<div class="sec-title">Confirma tu Asistencia</div>' +
       '<div class="sec-sub mb">Tienes ' + (guest.max_pases || 0) + " " + ((guest.max_pases || 0) > 1 ? "pases" : "pase") + " reservados</div>" +
-      '<div class="card mt"><label class="f">Invitación para</label><input class="t" value="' + esc(guest.nombre) + '" disabled>' +
+      '<div class="card mt rsvp-card"><label class="f">Invitación para</label><input class="t" value="' + esc(guest.nombre) + '" disabled>' +
       '<div class="mt"><label class="f">Teléfono o correo</label><input class="t" id="f-tel" placeholder="Tu teléfono o correo"></div>' +
       '<div class="mt"><label class="f">Número de pases (máx. ' + (guest.max_pases || 1) + ')</label><select class="t" id="f-pases">' + opts + "</select></div>" +
       '<div class="mt"><label class="f">¿Asistirás?</label><div class="toggle"><button id="a-si" class="on">Sí, asistiré</button><button id="a-no">No podré</button></div></div></div>' +
-      '<button class="btn" id="btnRsvp">Enviar confirmación</button>' +
+      '<button class="btn shine" id="btnRsvp">Enviar confirmación</button>' +
       '<p class="hint center mt">Tu confirmación es muy importante para nosotros.</p>';
     pickAsiste = true;
     document.getElementById("a-si")?.addEventListener("click", () => setA(true));
@@ -202,6 +217,34 @@ import Ornament from "./Ornament.astro";
     .catch(() => { state = { guestStatus: "error" }; render(); });
 </script>
 <style is:global>
+  #rsvp-box .rsvp-kicker {
+    margin-bottom: 6px;
+    color: var(--color-gold-d);
+    font-family: var(--font-script);
+    font-size: 30px;
+    line-height: 1;
+    text-align: center;
+  }
+  #rsvp-box .rsvp-card {
+    position: relative;
+    border-color: rgba(184, 150, 90, 0.55);
+    box-shadow: 0 0 0 4px rgba(230, 212, 171, 0.35), 0 24px 40px -30px rgba(152, 119, 64, 0.75);
+  }
+  #rsvp-box .confirmed-state .sec-title::before {
+    content: "✓";
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: var(--foil);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 20px;
+    letter-spacing: 0;
+    box-shadow: 0 10px 22px -12px rgba(152, 119, 64, 0.9);
+  }
   #rsvp-box .confirmed-state .sec-title {
     color: #443b31;
     font-size: 29px;

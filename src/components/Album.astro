@@ -11,10 +11,10 @@ import { icon } from "../lib/icons";
   <input type="file" id="photoInput" accept="image/*" multiple hidden />
   <div style="height:24px"></div>
   <div class="thanks">
-    <div class="g">Gracias</div>
+    <div class="g foil">Gracias</div>
     <div style="letter-spacing:3px;font-size:12px;text-transform:uppercase;margin:8px 0">Por ser parte de<br />nuestra gran historia</div>
     <div class="hint" style="color:#c9bfa9">Con amor,</div>
-    <div style="font-family:var(--font-script);font-size:34px;color:#f1e7d2">Cristian & Jimena</div>
+    <div style="font-family:var(--font-script);font-size:34px;color:#f1e7d2">Jimena & Cristian</div>
   </div>
   <div style="height:20px"></div>
 </div>
@@ -72,11 +72,18 @@ import { icon } from "../lib/icons";
     inp.value = "";
     if (!files.length) return;
     toast("Subiendo " + files.length + " foto(s)...");
+    let saved = 0;
     for (const f of files) {
-      try { const d = await downscale(f); await savePhoto(getToken(), guestName, f.name, d); } catch (err) {}
+      try {
+        const d = await downscale(f);
+        const r = await savePhoto(getToken(), guestName, f.name, d);
+        if (r && r.ok) saved++;
+      } catch (err) {}
     }
     try { const ph = await getPhotos(); render(ph || []); } catch (e2) {}
-    toast("¡Gracias por compartir!");
+    if (saved === files.length) toast("¡Gracias por compartir!");
+    else if (saved > 0) toast("Se subieron " + saved + " de " + files.length + " fotos");
+    else toast("No se pudieron subir, intenta de nuevo");
   });
 
   boot().then((s) => { if (s.guest?.nombre) guestName = s.guest.nombre; render(s.photos || []); });

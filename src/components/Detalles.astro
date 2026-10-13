@@ -1,31 +1,186 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
+// Cada sede reúne sus eventos y su botón de mapa (antes estaba repetido en Ubicaciones).
+const sedes = [
+  {
+    icono: "church",
+    nombre: "Templo de Fátima",
+    mapa: "Templo de Fátima Durango",
+    eventos: [{ nombre: "Ceremonia religiosa", hora: "5:00 PM" }],
+  },
+  {
+    icono: "cheers",
+    nombre: "Salón Casa Meraki",
+    mapa: "Salón Casa Meraki Durango",
+    eventos: [
+      { nombre: "Ceremonia civil", hora: "8:00 PM" },
+      { nombre: "Recepción", hora: "9:00 PM" },
+    ],
+  },
+];
 ---
 <div class="wrap">
-  <SectionTitle title="Detalles del Evento" />
-  <div class="ecard"><div class="e">Fecha</div><div class="ln"></div><h3>3 de Abril de 2027</h3><div class="s">SÁBADO</div></div>
-  <div class="ecard"><div class="e">Ceremonia Religiosa</div><div class="ln"></div><h3>Templo de Fátima</h3><div class="s">5:00 PM</div></div>
-  <div class="ecard"><div class="e">Ceremonia Civil</div><div class="ln"></div><h3>Salón Casa Meraki</h3><div class="s">8:00 PM</div></div>
-  <div class="ecard"><div class="e">Recepción</div><div class="ln"></div><h3>Salón Casa Meraki</h3><div class="s">9:00 PM</div></div>
+  <SectionTitle title="El Gran Día" />
+
+  <div class="date-card">
+    <span class="date-side">Sábado</span>
+    <div class="date-main">
+      <span class="date-month">Abril</span>
+      <b class="foil deep">03</b>
+      <span class="date-year">2027</span>
+    </div>
+    <span class="date-side">Durango</span>
+  </div>
+
+  {sedes.map((sede) => (
+    <div class="venue">
+      <div class="venue-head">
+        <div class="venue-ic" set:html={icon(sede.icono)}></div>
+        <h3>{sede.nombre}</h3>
+      </div>
+      <ul>
+        {sede.eventos.map((evento) => (
+          <li><span>{evento.nombre}</span><b>{evento.hora}</b></li>
+        ))}
+      </ul>
+      <button class="btn ghost venue-map" data-maps={sede.mapa}><span set:html={icon("pin")}></span>Cómo llegar</button>
+    </div>
+  ))}
+
   <button class="btn dark mt" id="btnCal"><span set:html={icon("cal")}></span>Agregar al calendario</button>
 </div>
 
+<style>
+  .date-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 22px 18px;
+    border: 1px solid rgba(184, 150, 90, 0.5);
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(230, 212, 171, 0.45), transparent 65%),
+      var(--color-paper);
+    box-shadow: 0 0 0 4px rgba(230, 212, 171, 0.25), var(--lift);
+  }
+  .date-side {
+    flex: 1;
+    padding: 9px 0;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    color: var(--color-gold-d);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .date-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+  .date-main b {
+    font-family: var(--font-serif);
+    font-size: 76px;
+    font-weight: 500;
+    line-height: 0.95;
+  }
+  .date-month,
+  .date-year {
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 17px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .venue {
+    position: relative;
+    margin-bottom: 14px;
+    padding: 18px 18px 16px;
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    background: var(--color-paper);
+    box-shadow: var(--lift);
+  }
+  .venue-head {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+  }
+  .venue-ic {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-champ-l);
+    color: var(--color-gold-d);
+  }
+  .venue h3 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 23px;
+    font-weight: 500;
+  }
+  .venue ul {
+    margin: 12px 0 14px;
+    padding: 0;
+    list-style: none;
+  }
+  .venue li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 2px;
+    border-bottom: 1px dashed var(--color-line);
+    font-size: 13.5px;
+  }
+  .venue li:last-child {
+    border-bottom: 0;
+  }
+  .venue li span {
+    flex: 1;
+  }
+  .venue li b {
+    color: var(--color-gold-d);
+    font-family: var(--font-serif);
+    font-size: 19px;
+    font-weight: 500;
+  }
+  .venue-map {
+    padding: 12px;
+    font-size: 12px;
+  }
+</style>
+
 <script>
+  document.querySelectorAll<HTMLElement>("[data-maps]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const q = b.dataset.maps || "";
+      window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q), "_blank");
+    })
+  );
+
   document.getElementById("btnCal")?.addEventListener("click", () => {
     const ics = [
-      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//BodaCJ//ES", "BEGIN:VEVENT",
-      "UID:" + Date.now() + "@bodacj",
-      "DTSTART:20270403T170000", "DTEND:20270404T013000",
-      "SUMMARY:Boda de Cristian & Jimena",
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//BodaJC//ES", "BEGIN:VEVENT",
+      "UID:" + Date.now() + "@bodajc",
+      "DTSTART:20270403T230000Z", "DTEND:20270404T073000Z",
+      "SUMMARY:Boda de Jimena & Cristian",
       "LOCATION:Templo de Fatima / Salon Casa Meraki",
-      "DESCRIPTION:Religiosa 5PM Fatima. Civil y recepcion 8PM Casa Meraki.",
+      "DESCRIPTION:Religiosa 5PM Fatima. Civil 8PM y recepcion 9PM Casa Meraki.",
       "END:VEVENT", "END:VCALENDAR",
     ].join("\r\n");
     const b = new Blob([ics], { type: "text/calendar" });
     const u = URL.createObjectURL(b);
     const a = document.createElement("a");
-    a.href = u; a.download = "Boda-Cristian-Jimena.ics"; a.click();
+    a.href = u; a.download = "Boda-Jimena-Cristian.ics"; a.click();
     URL.revokeObjectURL(u);
   });
 </script>

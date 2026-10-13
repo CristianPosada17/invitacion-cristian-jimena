@@ -1,17 +1,38 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
 const fotos = [
-  { src: "/galeria/foto-1.jpg", alt: "Cristian y Jimena celebrando juntos" },
-  { src: "/galeria/foto-2.jpg", alt: "Cristian y Jimena entre luces de celebración" },
-  { src: "/galeria/foto-3.jpg", alt: "La propuesta de matrimonio de Cristian a Jimena" },
-  { src: "/galeria/foto-4.jpg", alt: "Cristian y Jimena mirándose durante su compromiso" },
-  { src: "/galeria/foto-5.jpg", alt: "Jimena mostrando su anillo de compromiso" },
-  { src: "/galeria/foto-6.jpg", alt: "Cristian y Jimena frente a una iglesia" },
-  { src: "/galeria/foto-7.jpg", alt: "Cristian y Jimena juntos en el centro de la ciudad" },
-  { src: "/galeria/foto-8.jpg", alt: "Cristian y Jimena abrazados en una calle de la ciudad" },
+  { src: "/galeria/jc-01.jpg", w: 1400, h: 933, alt: "Jimena y Cristian en un salón de cortinas rojas" },
+  { src: "/galeria/jc-02.jpg", w: 933, h: 1400, alt: "Jimena y Cristian tomados de la mano en un salón clásico" },
+  { src: "/galeria/jc-03.jpg", w: 1400, h: 933, alt: "Jimena y Cristian frente a un ventanal con cortinas rojas" },
+  { src: "/galeria/jc-04.jpg", w: 933, h: 1400, alt: "Jimena y Cristian entre las butacas de un teatro" },
+  { src: "/galeria/jc-05.jpg", w: 1400, h: 933, alt: "Jimena y Cristian en el palco de un teatro" },
+  { src: "/galeria/jc-06.jpg", w: 933, h: 1400, alt: "Jimena y Cristian sentados en las butacas rojas" },
+  { src: "/galeria/jc-07.jpg", w: 933, h: 1400, alt: "Jimena y Cristian riendo en el teatro" },
+  { src: "/galeria/jc-08.jpg", w: 1400, h: 933, alt: "Jimena y Cristian en el teatro vacío" },
+  { src: "/galeria/jc-09.jpg", w: 1400, h: 933, alt: "Jimena y Cristian abrazados frente al escenario" },
+  { src: "/galeria/jc-10.jpg", w: 933, h: 1400, alt: "Jimena y Cristian paseando por el centro histórico" },
+  { src: "/galeria/jc-11.jpg", w: 933, h: 1400, alt: "Jimena y Cristian abrazados con un ramo de rosas blancas" },
+  { src: "/galeria/jc-12.jpg", w: 933, h: 1400, alt: "Jimena abrazando a Cristian con su ramo" },
+  { src: "/galeria/jc-13.jpg", w: 1400, h: 933, alt: "Jimena y Cristian sonriendo juntos" },
+  { src: "/galeria/jc-14.jpg", w: 933, h: 1400, alt: "Jimena y Cristian abrazados entre columnas de cantera" },
+  { src: "/galeria/jc-15.jpg", w: 1400, h: 933, alt: "Jimena y Cristian bajo un arco de cantera" },
+  { src: "/galeria/jc-16.jpg", w: 933, h: 1400, alt: "Jimena y Cristian caminando frente a una puerta de madera" },
+  { src: "/galeria/jc-17.jpg", w: 1400, h: 933, alt: "Las manos de Jimena y Cristian con el anillo de compromiso" },
+  { src: "/galeria/jc-18.jpg", w: 933, h: 1400, alt: "Jimena y Cristian caminando por la banqueta" },
+  { src: "/galeria/jc-19.jpg", w: 1400, h: 933, alt: "Jimena y Cristian abrazados en la calle" },
+  { src: "/galeria/jc-20.jpg", w: 1400, h: 933, alt: "Jimena y Cristian juntos bajo los árboles" },
+  { src: "/galeria/jc-21.jpg", w: 933, h: 1400, alt: "Cristian levantando a Jimena en un beso" },
+  { src: "/galeria/jc-22.jpg", w: 1400, h: 933, alt: "Jimena y Cristian entre luces" },
+  { src: "/galeria/jc-23.jpg", w: 1400, h: 933, alt: "Jimena mostrando su anillo de compromiso" },
+  { src: "/galeria/jc-24.jpg", w: 1400, h: 933, alt: "La propuesta de matrimonio de Cristian a Jimena" },
+  { src: "/galeria/jc-25.jpg", w: 1400, h: 933, alt: "Jimena y Cristian entre luces de celebración" },
+  { src: "/galeria/jc-26.jpg", w: 1400, h: 933, alt: "Cristian de rodillas pidiéndole matrimonio a Jimena" },
+  { src: "/galeria/jc-27.jpg", w: 934, h: 1400, alt: "Jimena y Cristian abrazados en una calle de la ciudad" },
 ];
-const destacada = fotos[1];
-const mosaico = fotos.filter((_, index) => index !== 1);
+const destacada = fotos[0];
+const mosaico = fotos.slice(1);
+// Se muestran las primeras fotos; el resto aparece con "Ver todas".
+const VISIBLES = 12;
 ---
 <div class="wrap" style="padding-bottom:10px">
   <SectionTitle title="Nuestra Galería" sub="Algunos momentos que forman parte de nuestra historia" />
@@ -25,14 +46,14 @@ const mosaico = fotos.filter((_, index) => index !== 1);
     data-gallery-alt={destacada.alt}
     aria-label="Ampliar fotografía destacada"
   >
-    <img src={destacada.src} alt={destacada.alt} loading="eager" decoding="async" />
-    <span>Una noche para recordar</span>
+    <img src={destacada.src} alt={destacada.alt} width={destacada.w} height={destacada.h} loading="lazy" decoding="async" />
+    <span>Nuestra sesión</span>
   </button>
 </div>
 
-<div class="couple-gallery" aria-label="Galería de Cristian y Jimena">
-  {mosaico.map((foto) => (
-    <figure class="gallery-item">
+<div class="couple-gallery" id="coupleGallery" aria-label="Galería de Jimena y Cristian">
+  {mosaico.map((foto, index) => (
+    <figure class={index < VISIBLES ? "gallery-item" : "gallery-item gallery-more"}>
       <button
         type="button"
         class="gallery-photo"
@@ -40,13 +61,20 @@ const mosaico = fotos.filter((_, index) => index !== 1);
         data-gallery-alt={foto.alt}
         aria-label={`Ampliar: ${foto.alt}`}
       >
-        <img src={foto.src} alt={foto.alt} loading="lazy" decoding="async" />
+        <img src={foto.src} alt={foto.alt} width={foto.w} height={foto.h} loading="lazy" decoding="async" />
       </button>
     </figure>
   ))}
 </div>
+{mosaico.length > VISIBLES && (
+  <div class="wrap gallery-all" style="padding-top:4px">
+    <button type="button" class="btn ghost" id="galleryShowAll">Ver todas las fotos ({fotos.length})</button>
+  </div>
+)}
 
 <dialog class="gallery-lightbox" id="galleryLightbox" aria-label="Fotografía ampliada">
+  <button type="button" class="gallery-nav prev" id="galleryPrev" aria-label="Foto anterior">&lsaquo;</button>
+  <button type="button" class="gallery-nav next" id="galleryNext" aria-label="Foto siguiente">&rsaquo;</button>
   <button type="button" class="gallery-close" id="galleryClose" aria-label="Cerrar fotografía">×</button>
   <img id="galleryLarge" alt="" />
   <p id="galleryCaption"></p>
@@ -56,22 +84,48 @@ const mosaico = fotos.filter((_, index) => index !== 1);
   const dialog = document.getElementById("galleryLightbox") as HTMLDialogElement | null;
   const large = document.getElementById("galleryLarge") as HTMLImageElement | null;
   const caption = document.getElementById("galleryCaption");
+  const items = Array.from(document.querySelectorAll<HTMLElement>("[data-gallery-image]"));
+  let current = 0;
 
-  document.querySelectorAll<HTMLElement>("[data-gallery-image]").forEach((button) => {
+  function show(index: number) {
+    if (!large || !items.length) return;
+    current = (index + items.length) % items.length;
+    const item = items[current];
+    large.src = item.dataset.galleryImage || "";
+    large.alt = item.dataset.galleryAlt || "Fotografía de Jimena y Cristian";
+    if (caption) caption.textContent = large.alt + " · " + (current + 1) + "/" + items.length;
+  }
+
+  items.forEach((button, index) => {
     button.addEventListener("click", () => {
-      if (!dialog || !large) return;
-      const src = button.dataset.galleryImage || "";
-      const alt = button.dataset.galleryAlt || "Fotografía de Cristian y Jimena";
-      large.src = src;
-      large.alt = alt;
-      if (caption) caption.textContent = alt;
+      if (!dialog) return;
+      show(index);
       dialog.showModal();
     });
   });
 
+  document.getElementById("galleryPrev")?.addEventListener("click", () => show(current - 1));
+  document.getElementById("galleryNext")?.addEventListener("click", () => show(current + 1));
   document.getElementById("galleryClose")?.addEventListener("click", () => dialog?.close());
   dialog?.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();
+  });
+  dialog?.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") show(current - 1);
+    if (event.key === "ArrowRight") show(current + 1);
+  });
+
+  // Deslizar con el dedo para pasar de foto.
+  let startX = 0;
+  large?.addEventListener("touchstart", (event) => { startX = event.touches[0].clientX; }, { passive: true });
+  large?.addEventListener("touchend", (event) => {
+    const dx = event.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+  });
+
+  document.getElementById("galleryShowAll")?.addEventListener("click", () => {
+    document.getElementById("coupleGallery")?.classList.add("show-all");
+    document.querySelector(".gallery-all")?.remove();
   });
 </script>
 
@@ -131,6 +185,8 @@ const mosaico = fotos.filter((_, index) => index !== 1);
   }
   .gallery-item .gallery-photo { height: auto; }
   .gallery-item img { height: auto; aspect-ratio: auto; }
+  .gallery-more { display: none; }
+  .couple-gallery.show-all .gallery-more { display: block; }
   .gallery-lightbox {
     width: min(400px, calc(100vw - 30px));
     max-height: calc(100dvh - 40px);
@@ -160,6 +216,22 @@ const mosaico = fotos.filter((_, index) => index !== 1);
     font-size: 11px;
     line-height: 1.4;
   }
+  .gallery-nav {
+    position: absolute;
+    top: 40%;
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 50%;
+    background: rgba(20,16,12,.5);
+    color: #fff;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .gallery-nav.prev { left: 8px; }
+  .gallery-nav.next { right: 8px; }
   .gallery-close {
     position: absolute;
     right: 9px;

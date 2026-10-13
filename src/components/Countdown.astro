@@ -1,30 +1,107 @@
 ---
-// Contador regresivo en vivo hasta la boda
+// Contador regresivo en vivo hasta la boda · tarjeta oscura con números dorados
 ---
 <div class="wrap center" style="padding-top:30px">
-  <div class="countdown" id="cd-inicio"></div>
-  <p class="countdown-caption">para el gran día</p>
+  <div class="cd-night">
+    <div class="cd-night-kicker">Faltan</div>
+    <div class="countdown" id="cd-inicio" aria-live="off"></div>
+    <p class="cd-night-caption">para el gran día <span>·</span> 03 · 04 · 2027</p>
+  </div>
 </div>
 
 <style>
-  .countdown-caption {
-    margin: 9px 0 0;
-    color: #786d5e;
-    font-size: 13.5px;
-    font-weight: 400;
-    line-height: 1.4;
+  .cd-night {
+    position: relative;
+    overflow: hidden;
+    padding: 22px 12px 18px;
+    border: 1px solid rgba(214, 180, 108, 0.5);
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(214, 180, 108, 0.28), transparent 62%),
+      radial-gradient(circle at 100% 100%, rgba(155, 165, 137, 0.16), transparent 50%),
+      var(--color-dark);
+    box-shadow: 0 26px 48px -30px rgba(33, 29, 23, 0.95);
+  }
+  .cd-night::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(214, 180, 108, 0.18);
+    border-radius: 15px;
+    pointer-events: none;
+  }
+  .cd-night-kicker {
+    margin-bottom: 8px;
+    color: #d9bd7a;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .cd-night :global(.cd) {
+    background: rgba(255, 248, 230, 0.04);
+    border-color: rgba(214, 180, 108, 0.32);
+  }
+  .cd-night :global(.cd b) {
+    font-size: 30px;
+    line-height: 1.05;
+  }
+  .cd-night :global(.cd span) {
+    color: #c9bfa9;
+  }
+  .cd-night :global(.cd b.tick) {
+    animation: cdTick 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes cdTick {
+    from {
+      transform: translateY(-6px);
+      opacity: 0.2;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  .cd-night-caption {
+    margin: 12px 0 0;
+    color: #e9ddc6;
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-style: italic;
+    letter-spacing: 0.5px;
+  }
+  .cd-night-caption span {
+    color: #d9bd7a;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cd-night :global(.cd b.tick) {
+      animation: none;
+    }
   }
 </style>
 
 <script>
   import { countdownParts } from "../lib/state";
-  function render() {
-    const el = document.getElementById("cd-inicio");
-    if (!el) return;
+  const el = document.getElementById("cd-inicio");
+  const values: HTMLElement[] = [];
+
+  // Se construye una vez y luego solo cambia el número que avanzó (con animación).
+  if (el) {
     el.innerHTML = countdownParts()
-      .map((p) => `<div class="cd"><b>${p[1]}</b><span>${p[0]}</span></div>`)
+      .map((p) => `<div class="cd"><b class="foil">${p[1]}</b><span>${p[0]}</span></div>`)
       .join("");
+    values.push(...Array.from(el.querySelectorAll<HTMLElement>("b")));
   }
-  render();
+
+  function render() {
+    countdownParts().forEach((p, index) => {
+      const b = values[index];
+      const next = String(p[1]);
+      if (!b || b.textContent === next) return;
+      b.textContent = next;
+      b.classList.remove("tick");
+      void b.offsetWidth;
+      b.classList.add("tick");
+    });
+  }
   setInterval(render, 1000);
 </script>

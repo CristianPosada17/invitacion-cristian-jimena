@@ -1,6 +1,12 @@
 ---
 // Hero · portada a pantalla completa
 const fecha = "3 DE ABRIL DE 2027";
+// Polvo dorado: posiciones fijas para que el render sea estable entre visitas.
+const motas = [
+  [8, 9.5, 0, 3], [17, 12, 4.2, 2], [26, 10.5, 1.6, 4], [35, 13, 6.8, 2], [44, 11, 2.9, 3],
+  [53, 12.5, 8.1, 2], [62, 9.8, 0.8, 3], [71, 13.5, 5.4, 4], [80, 10.2, 3.6, 2], [89, 12, 7.2, 3],
+  [13, 14, 9.4, 2], [58, 11.6, 10.6, 3], [76, 14.2, 11.8, 2], [31, 12.8, 12.4, 3],
+];
 ---
 
 <section
@@ -8,59 +14,58 @@ const fecha = "3 DE ABRIL DE 2027";
   class="relative h-[100dvh] max-h-[900px] min-h-[600px] text-white text-center flex flex-col items-center justify-center overflow-hidden"
 >
   <img
-    src="/galeria/foto-8.jpg"
+    src="/portada.jpg"
     alt=""
     aria-hidden="true"
     fetchpriority="high"
     decoding="async"
-    class="absolute inset-0 w-full h-full object-cover"
-    style="object-position:46% center;filter:brightness(.84) saturate(.9)"
+    class="hero-photo absolute inset-0 w-full h-full object-cover"
+    style="object-position:56% 30%;filter:brightness(.94) saturate(.95)"
   />
   <div
     class="absolute inset-0"
-    style="background:linear-gradient(180deg,rgba(20,16,12,.54) 0%,rgba(20,16,12,.27) 40%,rgba(20,16,12,.42) 68%,rgba(20,16,12,.82) 100%)"
+    style="background:linear-gradient(180deg,rgba(20,16,12,.5) 0%,rgba(20,16,12,.12) 22%,rgba(20,16,12,0) 38%,rgba(20,16,12,.12) 50%,rgba(20,16,12,.62) 64%,rgba(20,16,12,.86) 80%,rgba(20,16,12,.92) 100%)"
   >
   </div>
   <div
     class="absolute inset-0"
-    style="background:radial-gradient(ellipse at 50% 44%,transparent 10%,rgba(16,12,9,.28) 82%)"
+    style="background:radial-gradient(ellipse at 50% 40%,transparent 30%,rgba(16,12,9,.22) 90%)"
   >
   </div>
 
-  <div class="relative z-10 px-6 flex flex-col items-center">
-    <img
-      src="/logo-boda.png"
-      alt="Cristian & Jimena"
-      class="w-[200px] h-[200px] object-contain mb-6"
-      style="filter:drop-shadow(0 3px 12px rgba(0,0,0,.5)) brightness(1.15) saturate(1.1)"
-    />
-    <p class="text-[12px] tracking-[7px] uppercase opacity-90 mb-7">
+  <div class="hero-dust" aria-hidden="true">
+    {motas.map(([left, dur, delay, size]) => (
+      <i style={`left:${left}%;--d:${dur}s;--w:${delay}s;--s:${size}px`}></i>
+    ))}
+  </div>
+
+  <!-- Arriba: monograma discreto. Centro libre para sus caras. Abajo: nombres y fecha. -->
+  <div class="hero-top absolute top-0 left-0 right-0 z-10 flex flex-col items-center">
+    <div class="hero-step hero-logo" style="--i:0">
+      <img src="/monograma-jc.svg" alt="Jimena & Cristian" class="w-[64px] h-[75px] object-contain" />
+    </div>
+    <p class="hero-step text-[11px] tracking-[7px] uppercase opacity-90 mt-3" style="--i:1">
       Nos casamos
     </p>
+  </div>
 
-    <h1
-      class="font-script text-[80px] leading-none"
-      style="text-shadow:0 3px 26px rgba(0,0,0,.4)"
-    >
-      Cristian
-    </h1>
-    <span class="font-script text-[44px] text-champ my-3">&amp;</span>
-    <h1
-      class="font-script text-[80px] leading-none"
-      style="text-shadow:0 3px 26px rgba(0,0,0,.4)"
-    >
-      Jimena
+  <div class="hero-bottom absolute left-0 right-0 bottom-[70px] z-10 px-6 flex flex-col items-center">
+    <h1 class="font-script leading-none" style="text-shadow:0 3px 22px rgba(0,0,0,.5)">
+      <span class="hero-name block text-[62px]" style="--i:2">Jimena</span>
+      <span class="hero-amp block text-[46px] -my-1" style="--i:3"><span class="foil">&amp;</span></span>
+      <span class="hero-name block text-[62px]" style="--i:4">Cristian</span>
     </h1>
 
-    <div class="w-16 h-px bg-white/60 my-8"></div>
-    <p class="tracking-[4px] text-[15px]">{fecha}</p>
-    <p class="font-light text-[13px] opacity-90 mt-5 leading-relaxed">
-      Acompáñanos en el inicio<br />de nuestra historia.
+    <div class="hero-rule my-5" style="--i:5"></div>
+    <p class="hero-step hero-date tracking-[4px] text-[14px]" style="--i:6">{fecha}</p>
+    <p class="hero-step font-light text-[12.5px] opacity-90 mt-3 leading-relaxed" style="--i:7">
+      Acompáñanos en el inicio de nuestra historia.
     </p>
   </div>
 
   <div
-    class="absolute bottom-7 left-0 right-0 z-10 flex justify-center opacity-85 animate-bounce"
+    class="hero-step hero-arrow absolute bottom-5 left-0 right-0 z-10 flex justify-center"
+    style="--i:8"
   >
     <svg
       width="26"
@@ -71,8 +76,140 @@ const fecha = "3 DE ABRIL DE 2027";
       stroke-width="1.4"
       stroke-linecap="round"
       stroke-linejoin="round"
+      class="animate-bounce"
     >
       <path d="M6 9l6 6 6-6"></path>
     </svg>
   </div>
 </section>
+
+<style>
+  /* La coreografía arranca cuando Layout agrega .hero-ready (al abrir el sobre). */
+  .hero-photo {
+    transform: scale(1.12);
+    transition: transform 9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #hero.hero-ready .hero-photo {
+    transform: scale(1.02);
+  }
+
+  .hero-step,
+  .hero-amp {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(4px);
+    transition:
+      opacity 1s ease,
+      transform 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 1s ease;
+    transition-delay: calc(var(--i) * 0.28s + 0.15s);
+  }
+  #hero.hero-ready .hero-step,
+  #hero.hero-ready .hero-amp {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  #hero.hero-ready .hero-step.opacity-90 {
+    opacity: 0.9;
+  }
+
+  /* Los nombres se "escriben" de izquierda a derecha, como trazo de pluma. */
+  .hero-name {
+    padding: 0 0.12em;
+    clip-path: inset(-20% 100% -20% 0);
+    transition: clip-path 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+    transition-delay: calc(var(--i) * 0.28s + 0.15s);
+  }
+  #hero.hero-ready .hero-name {
+    clip-path: inset(-20% -5% -20% 0);
+  }
+
+  .hero-top {
+    padding-top: max(26px, env(safe-area-inset-top));
+  }
+  /* Monograma pequeño y difuminado: acompaña sin robar atención a la foto. */
+  .hero-logo img {
+    filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 10px rgba(255, 240, 205, 0.3));
+  }
+  #hero.hero-ready .hero-logo {
+    opacity: 0.9;
+  }
+  .hero-amp .foil {
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.45));
+  }
+
+  .hero-rule {
+    width: 64px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #f2deb0, transparent);
+    transform: scaleX(0);
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--i) * 0.28s + 0.15s);
+  }
+  #hero.hero-ready .hero-rule {
+    transform: scaleX(1.6);
+  }
+  .hero-date {
+    color: #f6e6bd;
+    text-shadow: 0 0 18px rgba(214, 180, 108, 0.55);
+  }
+  #hero.hero-ready .hero-arrow {
+    opacity: 0.85;
+  }
+
+  /* Polvo dorado que flota hacia arriba */
+  .hero-dust {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 2s ease 1.2s;
+  }
+  #hero.hero-ready .hero-dust {
+    opacity: 1;
+  }
+  .hero-dust i {
+    position: absolute;
+    bottom: -12px;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff6dc 0%, #e2c27f 45%, rgba(214, 180, 108, 0) 72%);
+    box-shadow: 0 0 8px 1px rgba(240, 214, 150, 0.55);
+    animation: dustRise var(--d) linear var(--w) infinite;
+    opacity: 0;
+  }
+  @keyframes dustRise {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+    }
+    12% {
+      opacity: 0.9;
+    }
+    50% {
+      transform: translate3d(14px, -48vh, 0);
+    }
+    85% {
+      opacity: 0.7;
+    }
+    100% {
+      transform: translate3d(-10px, -96vh, 0);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-photo,
+    .hero-step,
+    .hero-amp,
+    .hero-name,
+    .hero-rule {
+      transition: none !important;
+    }
+    .hero-dust {
+      display: none;
+    }
+  }
+</style>

@@ -1,6 +1,12 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
+// Colores que se pide evitar: se muestran como muestras tachadas.
+const evitar = [
+  { nombre: "Blanco", color: "#ffffff" },
+  { nombre: "Champagne", color: "#e6d4ab" },
+  { nombre: "Dorado", color: "linear-gradient(135deg,#a8833f,#e7cf94,#b8965a)" },
+];
 ---
 
 <div class="wrap reveal">
@@ -10,8 +16,19 @@ import { icon } from "../lib/icons";
       <div class="ic" set:html={icon("dress")}></div>
       <div class="tx">
         <b>Código de Vestimenta</b>
-        <span>Formal / Etiqueta · Evitar champagne, blanco y dorado</span>
+        <span>Formal / Etiqueta</span>
       </div>
+    </div>
+    <div class="avoid">
+      <p>Te pedimos evitar estos colores</p>
+      <ul>
+        {evitar.map((c) => (
+          <li>
+            <i style={`background:${c.color}`}></i>
+            <span>{c.nombre}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   </div>
   <div class="notice">
@@ -23,3 +40,54 @@ import { icon } from "../lib/icons";
     </p>
   </div>
 </div>
+
+<style>
+  .avoid {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--color-line);
+    text-align: center;
+  }
+  .avoid p {
+    margin: 0 0 12px;
+    color: var(--color-soft);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .avoid ul {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .avoid li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-ink);
+  }
+  .avoid i {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-line);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 3px #fff, 0 6px 14px -10px rgba(74, 65, 54, 0.8);
+  }
+  .avoid i::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    bottom: -3px;
+    width: 1.5px;
+    background: #a5604f;
+    transform: rotate(45deg);
+    border-radius: 2px;
+  }
+</style>

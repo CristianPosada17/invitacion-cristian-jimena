@@ -1,164 +1,492 @@
 ---
-// Intro · el sobre (video) permanece cerrado hasta que el invitado toca la pantalla.
-// Se muestra una sola vez por sesión (solo en la página de Inicio).
+// Intro · sobre a pantalla completa hecho en código (CSS 3D + SVG).
+// La invitación ES el sobre: al tocar el sello se rompe, las solapas se abren
+// y se despliegan dejando ver la portada. Una sola vez por sesión (solo en Inicio).
+import monoRaw from "../../public/monograma-jc.svg?raw";
+
+const monoViewBox = /viewBox="([^"]+)"/.exec(monoRaw)?.[1] ?? "0 0 100 100";
+const monoPath = /\sd="([^"]+)"/.exec(monoRaw)?.[1] ?? "";
+
+// Aleatorio con semilla: el sello y la ramita salen idénticos en cada visita.
+function seeded(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Borde irregular de la gota de lacre.
+const rnd = seeded(27);
+const blobPts = Array.from({ length: 34 }, (_, i) => {
+  const a = (i / 34) * Math.PI * 2;
+  const r = 50 + (rnd() - 0.5) * 6 + (i % 5 === 0 ? 2.5 : 0);
+  return [Math.cos(a) * r, Math.sin(a) * r];
+});
+const blobPath =
+  blobPts
+    .map((p, i) => {
+      const n = blobPts[(i + 1) % blobPts.length];
+      const mid = [(p[0] + n[0]) / 2, (p[1] + n[1]) / 2];
+      return `${i === 0 ? "M" + mid[0].toFixed(1) + "," + mid[1].toFixed(1) : ""} Q${n[0].toFixed(1)},${n[1].toFixed(1)} ${((n[0] + blobPts[(i + 2) % blobPts.length][0]) / 2).toFixed(1)},${((n[1] + blobPts[(i + 2) % blobPts.length][1]) / 2).toFixed(1)}`;
+    })
+    .join(" ") + " Z";
+
+// Ramita de nube (gypsophila) detrás del sello.
+const r2 = seeded(8);
+const stems: { d: string }[] = [];
+const florets: { x: number; y: number; r: number }[] = [];
+[-128, -112, -96, -78, -62].forEach((deg, i) => {
+  const a = (deg * Math.PI) / 180;
+  const len = 58 + r2() * 30 - Math.abs(deg + 95) * 0.15;
+  const ex = Math.cos(a) * len;
+  const ey = Math.sin(a) * len;
+  const bend = (i - 2) * 9 + (r2() - 0.5) * 8;
+  stems.push({ d: `M0,0 Q${(ex / 2 + bend).toFixed(1)},${(ey / 2).toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}` });
+  // ramitas secundarias con flores
+  for (let k = 0; k < 3; k++) {
+    const t = 0.55 + k * 0.2;
+    const bx = ex * t + bend * 0.4;
+    const by = ey * t;
+    const side = k % 2 ? 1 : -1;
+    const tx = bx + side * (8 + r2() * 8);
+    const ty = by - 6 - r2() * 7;
+    stems.push({ d: `M${bx.toFixed(1)},${by.toFixed(1)} L${tx.toFixed(1)},${ty.toFixed(1)}` });
+    const count = 4 + Math.floor(r2() * 4);
+    for (let f = 0; f < count; f++) {
+      florets.push({ x: tx + (r2() - 0.5) * 9, y: ty + (r2() - 0.5) * 8, r: 1.5 + r2() * 1.3 });
+    }
+  }
+  const count = 6 + Math.floor(r2() * 4);
+  for (let f = 0; f < count; f++) {
+    florets.push({ x: ex + (r2() - 0.5) * 12, y: ey + (r2() - 0.5) * 10, r: 1.6 + r2() * 1.5 });
+  }
+});
 ---
 
+<!--
+  La pantalla completa ES el sobre (visto por detrás): solapas de papel, sello de lacre
+  y el nombre del invitado. Al tocar: el sello se rompe, la solapa superior se abre hacia
+  el invitado y las demás se despliegan, dejando ver la invitación que estaba dentro.
+-->
 <div
   id="intro"
-  class="absolute inset-0 z-[200] flex items-center justify-center cursor-pointer transition-opacity duration-700 overflow-hidden"
-  style="background:#e7dab6"
+  class="absolute inset-0 z-[200] overflow-hidden"
+  role="button"
+  tabindex="0"
+  aria-label="Abrir la invitación"
 >
-  <video
-    id="introVid"
-    src="/Sobre.mp4"
-    poster="/sobre-poster.png"
-    muted
-    playsinline
-    preload="auto"
-    class="w-full h-full object-cover"></video>
-  <div id="introGlow" class="pointer-events-none absolute inset-0"></div>
-  <div
-    id="introGuestCard"
-    class="pointer-events-none absolute left-5 right-5 top-[15%] text-center"
-  >
-    <span>Hemos preparado esta invitación especialmente para</span>
-    <strong id="introGuestName">alguien muy especial</strong>
-    <small>Nos encantará compartir este día contigo</small>
+  <!-- Interior del sobre: forro verde salvia -->
+  <div class="env-inside" aria-hidden="true">
+    <svg width="100%" height="100%">
+      <defs>
+        <pattern id="linerPattern" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+          <rect width="30" height="30" fill="#8e9a7d"></rect>
+          <path d="M15 5 q5 6 0 12 q-5 -6 0 -12z M4 20 q3.5 3.5 0 7 q-3.5 -3.5 0 -7z" fill="#d6bd82" opacity=".55"></path>
+          <circle cx="24" cy="23" r="1.2" fill="#e8d4a2" opacity=".7"></circle>
+        </pattern>
+        <linearGradient id="insideShade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#000" stop-opacity=".35"></stop>
+          <stop offset=".4" stop-color="#000" stop-opacity=".05"></stop>
+          <stop offset="1" stop-color="#000" stop-opacity=".25"></stop>
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="#e4d9c2"></rect>
+      <rect x="4%" y="2.5%" width="92%" height="95%" rx="4" fill="url(#linerPattern)"></rect>
+      <rect width="100%" height="100%" fill="url(#insideShade)"></rect>
+    </svg>
   </div>
-  <div
-    id="introHint"
-    class="pointer-events-none absolute bottom-12 left-0 right-0 flex flex-col items-center gap-3"
-  >
-    <span class="tap-ring"></span>
-    <span
-      class="text-[11px] tracking-[3px] uppercase"
-      style="color:rgba(90,66,30,.9)">Toca para abrir</span
-    >
+
+  <!-- Solapas laterales -->
+  <div class="flap flap-left" aria-hidden="true"><div class="paper"></div></div>
+  <div class="flap flap-right" aria-hidden="true"><div class="paper"></div></div>
+
+  <!-- Solapa inferior con el nombre del invitado escrito a mano -->
+  <div class="flap flap-bottom">
+    <div class="paper" aria-hidden="true"></div>
+    <div class="env-to">
+      <span id="introGuestLabel">Una invitación</span>
+      <strong id="introGuestName">especialmente para ti</strong>
+    </div>
   </div>
+
+  <!-- Solapa superior con los nombres de los novios -->
+  <div class="flap flap-top">
+    <div class="paper" aria-hidden="true"></div>
+    <div class="env-head">
+      <span>Nos casamos</span>
+      <b>Jimena <i>&amp;</i> Cristian</b>
+      <small>03 · 04 · 2027</small>
+    </div>
+  </div>
+
+  <!-- Sello de lacre con el monograma, sobre una ramita de nube -->
+  <div class="seal-wrap">
+    <svg class="sprig" viewBox="-100 -105 200 120" aria-hidden="true">
+      <g stroke="#a8956d" stroke-width=".9" fill="none" stroke-linecap="round" opacity=".85">
+        {stems.map((s) => <path d={s.d}></path>)}
+      </g>
+      <g>
+        {florets.map((f) => (
+          <circle cx={f.x.toFixed(1)} cy={f.y.toFixed(1)} r={f.r.toFixed(1)} fill="#fffaf0" stroke="#c9b894" stroke-width=".5"></circle>
+        ))}
+      </g>
+    </svg>
+    <div class="seal-ring" aria-hidden="true"></div>
+    {["left", "right"].map((half) => (
+      <svg class={`seal seal-${half}`} viewBox="-60 -60 120 120" aria-hidden="true">
+        <defs>
+          <radialGradient id={`wax-${half}`} cx="38%" cy="32%" r="75%">
+            <stop offset="0" stop-color="#f3dc9b"></stop>
+            <stop offset=".35" stop-color="#cfa65a"></stop>
+            <stop offset=".75" stop-color="#9c7432"></stop>
+            <stop offset="1" stop-color="#6e4f1f"></stop>
+          </radialGradient>
+          <radialGradient id={`press-${half}`} cx="60%" cy="65%" r="70%">
+            <stop offset="0" stop-color="#d7b46a"></stop>
+            <stop offset="1" stop-color="#a47c38"></stop>
+          </radialGradient>
+          <filter id={`sealShadow-${half}`} x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#3b2a10" flood-opacity=".45"></feDropShadow>
+          </filter>
+        </defs>
+        <path d={blobPath} fill={`url(#wax-${half})`} filter={`url(#sealShadow-${half})`}></path>
+        <circle r="37" fill={`url(#press-${half})`}></circle>
+        <circle r="37" fill="none" stroke="#7a5822" stroke-width="2.2" opacity=".55"></circle>
+        <circle r="35.2" fill="none" stroke="#f4dfa6" stroke-width=".9" opacity=".55"></circle>
+        <svg x="-24" y="-28" width="48" height="56" viewBox={monoViewBox}>
+          <path d={monoPath} fill-rule="evenodd" fill="#fff1c8" opacity=".55" transform="translate(-12 -12)"></path>
+          <path d={monoPath} fill-rule="evenodd" fill="#5e431a" opacity=".5" transform="translate(14 14)"></path>
+          <path d={monoPath} fill-rule="evenodd" fill="#c49b52"></path>
+        </svg>
+      </svg>
+    ))}
+    <div class="seal-glint" aria-hidden="true"></div>
+  </div>
+
+  <div class="intro-hint" aria-hidden="true">Toca el sello para abrir</div>
 </div>
 
 <style>
   #intro {
+    cursor: pointer;
     touch-action: manipulation;
+    outline: none;
+    perspective: 1100px;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
   }
-  #introVid {
+
+  .env-inside {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    transition: opacity 0.45s ease, transform 1s ease;
+  }
+  .env-inside svg {
+    display: block;
+  }
+
+  /* Solapas: el contenedor gira en 3D y proyecta sombra; el papel se recorta con clip-path. */
+  .flap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .flap .paper {
+    position: absolute;
+    inset: 0;
+  }
+  /* Textura de papel suave encima del degradado de cada solapa */
+  .flap .paper::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("/paper-texture.jpg") 0 0 / 520px 520px;
+    mix-blend-mode: multiply;
+    opacity: 0.32;
+  }
+  .flap-left {
+    z-index: 2;
+    transform-origin: 0 50%;
+    filter: drop-shadow(3px 0 6px rgba(90, 68, 34, 0.26));
+  }
+  .flap-left .paper {
+    clip-path: polygon(0 0, 47% 47.5%, 49.5% 50%, 47% 52.5%, 0 100%);
+    background-image: linear-gradient(90deg, #fbf7ee, #e8dec9);
+  }
+  .flap-right {
+    z-index: 2;
+    transform-origin: 100% 50%;
+    filter: drop-shadow(-3px 0 6px rgba(90, 68, 34, 0.26));
+  }
+  .flap-right .paper {
+    clip-path: polygon(100% 0, 53% 47.5%, 50.5% 50%, 53% 52.5%, 100% 100%);
+    background-image: linear-gradient(270deg, #f8f3e8, #e5dbc6);
+  }
+  .flap-bottom {
+    z-index: 3;
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 -4px 7px rgba(90, 68, 34, 0.24));
+  }
+  .flap-bottom .paper {
+    clip-path: polygon(0 100%, 0 99.4%, 44% 47.6%, 50% 45%, 56% 47.6%, 100% 99.4%, 100% 100%);
+    background-image: linear-gradient(0deg, #fdfaf3, #f2eadb 60%, #e7dcc6);
+  }
+  .flap-top {
+    z-index: 4;
+    transform-origin: 50% 0;
+    filter: drop-shadow(0 6px 10px rgba(74, 56, 32, 0.3));
+  }
+  .flap-top .paper {
+    clip-path: polygon(0 0, 100% 0, 100% 0.5%, 54.5% 51%, 50% 53.6%, 45.5% 51%, 0 0.5%);
+    background-image: linear-gradient(180deg, #efe6d3, #f9f4ea 70%, #fdfaf4);
+  }
+
+  /* Textos impresos / escritos sobre las solapas */
+  .env-head {
+    position: absolute;
+    top: 13%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #4a3b28;
+  }
+  .env-head span {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #9a7838;
+  }
+  .env-head b {
+    display: block;
+    margin: 7px 0 5px;
+    font-family: var(--font-serif);
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+  .env-head b i {
+    font-family: var(--font-script);
+    font-style: normal;
+    color: #b8965a;
+  }
+  .env-head small {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #8d7553;
+  }
+
+  .env-to {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 69%;
+    text-align: center;
+    color: #4b3a24;
+  }
+  .env-to span {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #9a7838;
+  }
+  .env-to strong {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--font-script);
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 1.12;
+    transition: opacity 0.35s ease;
+  }
+  .env-to strong.long {
+    font-size: 31px;
+  }
+  .env-to strong.xlong {
+    font-size: 26px;
+  }
+
+  /* Sello */
+  .seal-wrap {
+    position: absolute;
+    z-index: 6;
+    left: 50%;
+    top: 53.6%;
+    width: min(32%, 140px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+  }
+  .sprig {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 230%;
+    transform: translate(-50%, -82%);
+    overflow: visible;
+    filter: drop-shadow(0 1px 1px rgba(80, 60, 30, 0.25));
+    transition: opacity 0.5s ease, transform 0.8s ease;
+  }
+  .seal {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .seal-left {
+    clip-path: polygon(-20% -20%, 55% -20%, 49% 30%, 56% 62%, 50% 120%, -20% 120%);
+  }
+  .seal-right {
+    clip-path: polygon(51% -20%, 120% -20%, 120% 120%, 46% 120%, 52% 62%, 45% 30%);
+  }
+  .seal-glint {
+    position: absolute;
+    inset: 9%;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  .seal-glint::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -70%;
+    width: 45%;
+    background: linear-gradient(100deg, transparent, rgba(255, 244, 210, 0.75), transparent);
+    transform: skewX(-18deg);
+    animation: sealGlint 3.8s ease-in-out infinite 1s;
+  }
+  .seal-ring {
+    position: absolute;
+    inset: -4%;
+    border-radius: 50%;
+    border: 1.5px solid rgba(184, 150, 90, 0.75);
+    animation: sealPulse 2.2s ease-out infinite;
     pointer-events: none;
   }
-  #intro.waiting #introVid {
-    animation: breathe 3.6s ease-in-out infinite;
-  }
-  @keyframes breathe {
-    0%,
-    100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.03);
-    }
-  }
-  #introGlow {
-    background: radial-gradient(
-      circle at 50% 52%,
-      rgba(255, 226, 150, 0.55) 0%,
-      rgba(255, 210, 120, 0.18) 22%,
-      rgba(255, 210, 120, 0) 46%
-    );
-    mix-blend-mode: screen;
-    opacity: 0;
-  }
-  #intro.waiting #introGlow {
-    animation: glow 2.4s ease-in-out infinite;
-  }
-  #introGuestCard {
-    color: rgba(78, 61, 35, 0.94);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.44);
-    transition:
-      opacity 0.3s ease,
-      transform 0.45s ease;
-  }
-  #introGuestCard span,
-  #introGuestCard small {
-    display: block;
-    font-family: var(--font-sans);
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 2px;
-    line-height: 1.45;
+
+  .intro-hint {
+    position: absolute;
+    z-index: 7;
+    left: 0;
+    right: 0;
+    bottom: 6%;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 3px;
     text-transform: uppercase;
+    color: rgba(90, 66, 30, 0.85);
+    animation: hintPulse 2s ease-in-out infinite;
+    transition: opacity 0.3s ease;
   }
-  #introGuestCard strong {
-    display: block;
-    max-width: 340px;
-    margin: 7px auto 5px;
-    font-family: var(--font-serif);
-    font-size: 27px;
-    font-weight: 500;
-    line-height: 1.05;
+
+  /* ---------- Espera ---------- */
+  @keyframes sealGlint {
+    0%, 60% { left: -70%; }
+    100% { left: 130%; }
   }
-  #introGuestCard small {
-    font-size: 8px;
-    letter-spacing: 1.4px;
-    opacity: 0.74;
+  @keyframes sealPulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.45); opacity: 0; }
   }
-  @keyframes glow {
-    0%,
-    100% {
-      opacity: 0.25;
-    }
-    50% {
-      opacity: 0.85;
-    }
+  @keyframes hintPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
-  .tap-ring {
-    width: 10px;
-    height: 10px;
-    border-radius: 9999px;
-    background: rgba(120, 92, 46, 0.85);
-    box-shadow: 0 0 0 0 rgba(120, 92, 46, 0.5);
-    animation: ring 2s ease-out infinite;
+
+  /* ---------- Apertura ---------- */
+  #intro.opening .intro-hint,
+  #intro.opening .seal-ring,
+  #intro.opening .seal-glint {
+    opacity: 0;
+    animation: none;
   }
-  @keyframes ring {
-    0% {
-      box-shadow: 0 0 0 0 rgba(120, 92, 46, 0.45);
-    }
-    70% {
-      box-shadow: 0 0 0 16px rgba(120, 92, 46, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(120, 92, 46, 0);
-    }
+  #intro.opening .seal-wrap {
+    animation: sealPress 0.3s ease-out forwards;
   }
-  #introHint {
-    animation: fadePulse 1.8s ease-in-out infinite;
+  #intro.opening .seal-left {
+    animation: sealBreakL 0.85s cubic-bezier(0.5, 0, 0.75, 0) 0.28s forwards;
   }
-  @keyframes fadePulse {
-    0%,
-    100% {
-      opacity: 0.55;
-    }
-    50% {
-      opacity: 1;
-    }
+  #intro.opening .seal-right {
+    animation: sealBreakR 0.85s cubic-bezier(0.5, 0, 0.75, 0) 0.28s forwards;
   }
-  #intro.playing #introGlow,
-  #intro.playing #introHint,
-  #intro.playing #introGuestCard {
-    opacity: 0 !important;
-    animation: none !important;
+  #intro.opening .sprig {
+    opacity: 0;
+    transform: translate(-50%, -70%) rotate(-6deg);
+    transition-delay: 0.3s;
   }
-  #intro.playing #introGuestCard {
-    transform: translateY(-8px);
+  /* La solapa superior se levanta hacia el invitado */
+  #intro.opening .flap-top {
+    animation: openTop 1s cubic-bezier(0.45, 0, 0.25, 1) 0.55s forwards;
   }
+  /* Luego el sobre se despliega: laterales e inferior se abren hacia afuera */
+  #intro.opening .flap-left {
+    animation: openLeft 1.15s cubic-bezier(0.45, 0, 0.2, 1) 1.3s forwards;
+  }
+  #intro.opening .flap-right {
+    animation: openRight 1.15s cubic-bezier(0.45, 0, 0.2, 1) 1.38s forwards;
+  }
+  #intro.opening .flap-bottom {
+    animation: openBottom 1.2s cubic-bezier(0.45, 0, 0.2, 1) 1.2s forwards;
+  }
+  #intro.opening .env-inside {
+    opacity: 0;
+    transform: scale(1.06);
+    transition-delay: 1.5s;
+  }
+
+  @keyframes sealPress {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    60% { transform: translate(-50%, -50%) scale(0.93); }
+    100% { transform: translate(-50%, -50%) scale(0.97); }
+  }
+  @keyframes sealBreakL {
+    0% { transform: none; opacity: 1; }
+    100% { transform: translate(-45%, 170%) rotate(-38deg); opacity: 0; }
+  }
+  @keyframes sealBreakR {
+    0% { transform: none; opacity: 1; }
+    100% { transform: translate(45%, 185%) rotate(32deg); opacity: 0; }
+  }
+  @keyframes openTop {
+    0% { transform: rotateX(0deg); opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: rotateX(118deg); opacity: 0; }
+  }
+  @keyframes openLeft {
+    0% { transform: rotateY(0deg); opacity: 1; }
+    65% { opacity: 1; }
+    100% { transform: rotateY(-100deg); opacity: 0; }
+  }
+  @keyframes openRight {
+    0% { transform: rotateY(0deg); opacity: 1; }
+    65% { opacity: 1; }
+    100% { transform: rotateY(100deg); opacity: 0; }
+  }
+  @keyframes openBottom {
+    0% { transform: rotateX(0deg); opacity: 1; }
+    65% { opacity: 1; }
+    100% { transform: rotateX(-100deg); opacity: 0; }
+  }
+
   #intro.gone {
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
   }
+
   @media (prefers-reduced-motion: reduce) {
-    #intro.waiting #introVid,
-    #intro.waiting #introGlow,
-    .tap-ring,
-    #introHint {
+    .seal-ring,
+    .seal-glint::after,
+    .intro-hint {
       animation: none !important;
     }
   }
@@ -169,24 +497,37 @@
   import { WEDDING_AUDIO, getGuestNameHint } from "../lib/config";
 
   const intro = document.getElementById("intro");
-  const vid = document.getElementById("introVid") as HTMLVideoElement | null;
-  const weddingAudio = document.getElementById(
-    "weddingAudio",
-  ) as HTMLAudioElement | null;
+  const weddingAudio = document.getElementById("weddingAudio") as HTMLAudioElement | null;
+  const nameEl = document.getElementById("introGuestName");
+  const labelEl = document.getElementById("introGuestLabel");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let started = false;
   let revealed = false;
 
-  const guestNameHint = getGuestNameHint();
-  const introGuestName = document.getElementById("introGuestName");
-  if (guestNameHint && introGuestName)
-    introGuestName.textContent = guestNameHint;
+  // Nombre escrito en el sobre: primero la pista del link (?n=) y luego el dato de Google Sheets.
+  function setGuestName(name: string) {
+    if (!nameEl || !name) return;
+    const apply = () => {
+      nameEl.textContent = name;
+      nameEl.classList.toggle("long", name.length > 18 && name.length <= 28);
+      nameEl.classList.toggle("xlong", name.length > 28);
+      nameEl.style.opacity = "1";
+    };
+    if (nameEl.textContent === name) return apply();
+    nameEl.style.opacity = "0";
+    window.setTimeout(apply, 200);
+  }
+
+  const hint = getGuestNameHint();
+  if (hint) {
+    if (labelEl) labelEl.textContent = "Para";
+    setGuestName(hint);
+  }
 
   loadGuest().then(({ guest }) => {
-    const guestName = document.getElementById("introGuestName");
-    if (!guestName || !guest?.nombre) return;
-    guestName.textContent = [guest.prot, guest.nombre]
-      .filter(Boolean)
-      .join(" ");
+    if (!guest?.nombre) return;
+    if (labelEl) labelEl.textContent = "Para";
+    setGuestName([guest.prot, guest.nombre].filter(Boolean).join(" "));
   });
 
   function startWeddingMusic() {
@@ -214,34 +555,41 @@
     app.scrollTop = 0;
   }
 
-  function reveal() {
-    if (revealed || !intro) return;
-    revealed = true;
-    intro.classList.add("gone");
+  // La portada empieza su animación mientras el sobre se despliega encima.
+  let announced = false;
+  function announce() {
+    if (announced) return;
+    announced = true;
     resetHomeScroll();
-    window.setTimeout(() => {
-      intro.remove();
-      resetHomeScroll();
-    }, 750);
     try {
       sessionStorage.setItem("introSeen", "1");
     } catch (e) {}
     document.body.dispatchEvent(new CustomEvent("intro:done"));
   }
 
+  function reveal() {
+    if (revealed || !intro) return;
+    revealed = true;
+    announce();
+    intro.classList.add("gone");
+    window.setTimeout(() => {
+      intro.remove();
+      resetHomeScroll();
+    }, 650);
+  }
+
   function start() {
     if (started || !intro) return;
     started = true;
-    intro.classList.remove("waiting");
-    intro.classList.add("playing");
     startWeddingMusic();
-    if (vid) {
-      vid.currentTime = 0;
-      vid.play().catch(() => reveal());
-      setTimeout(reveal, 3200);
-    } else {
+    if (reduceMotion) {
       reveal();
+      return;
     }
+    intro.classList.add("opening");
+    // Sello (0–1.1s) → solapa superior (0.55–1.55s) → despliegue (1.2–2.55s).
+    window.setTimeout(announce, 1500);
+    window.setTimeout(reveal, 2550);
   }
 
   let seen = false;
@@ -254,11 +602,12 @@
     revealed = true;
     window.requestAnimationFrame(resetHomeScroll);
   } else {
-    intro?.classList.add("waiting");
-    if (vid) {
-      vid.pause();
-      vid.addEventListener("ended", reveal);
-    }
     intro?.addEventListener("click", start);
+    intro?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        start();
+      }
+    });
   }
 </script>

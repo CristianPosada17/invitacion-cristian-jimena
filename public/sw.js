@@ -1,6 +1,6 @@
-// Service Worker · Boda Cristian & Jimena (PWA)
-const CACHE = "bodacj-v19";
-const ASSETS = ["/", "/logo-boda.png", "/og-boda.png", "/paper-texture.jpg", "/Sobre.mp4", "/sobre-poster.png", "/galeria/foto-8.jpg", "/manifest.webmanifest"];
+// Service Worker · Boda Jimena & Cristian (PWA)
+const CACHE = "bodacj-v25";
+const ASSETS = ["/", "/logo-boda.png", "/monograma-jc.svg", "/og-boda.png", "/paper-texture.jpg", "/portada.jpg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -18,6 +18,8 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
   if (req.method !== "GET" || url.origin !== self.location.origin) return;
+  // Video (peticiones por rangos): directo a la red para que Safari lo reproduzca bien.
+  if (req.headers.has("range")) return;
 
   const isHTML = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
   if (isHTML) {

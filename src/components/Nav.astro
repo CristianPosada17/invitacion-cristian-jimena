@@ -58,6 +58,15 @@ const items = [
     });
   });
 
+  // En la portada el menú se oculta para no cortar el texto; aparece al bajar.
+  const hero = document.getElementById("hero");
+  function syncNavVisibility() {
+    if (!nav || !app) return;
+    const onCover = !!hero && app.scrollTop < hero.offsetHeight * 0.55;
+    nav.classList.toggle("nav-hidden", onCover);
+  }
+  syncNavVisibility();
+
   if (app) {
     let scheduled = false;
     app.addEventListener("scroll", () => {
@@ -65,6 +74,7 @@ const items = [
       scheduled = true;
       requestAnimationFrame(() => {
         scheduled = false;
+        syncNavVisibility();
         const guide = app.getBoundingClientRect().top + app.clientHeight * 0.38;
         let current = "hero";
         links.forEach((link) => {
