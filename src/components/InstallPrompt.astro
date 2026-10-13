@@ -4,7 +4,8 @@
 // así que mostramos los pasos exactos según el teléfono:
 //  · Android/Chrome: botón "Instalar" de un toque (evento beforeinstallprompt).
 //  · iPhone/Safari: Compartir → "Agregar a inicio".
-//  · Abierta dentro de WhatsApp/Instagram/Facebook: primero abrirla en Safari o Chrome.
+//  · Abierta dentro de WhatsApp: primero abrirla en Safari o Chrome (nota en cada pestaña).
+//  Hay pestañas iPhone / Android; se abre la del teléfono detectado.
 // También se puede abrir desde cualquier botón con [data-install-open].
 const shareIcon =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>';
@@ -23,34 +24,36 @@ const compassIcon =
     <h3 id="installTitle">Guarda tu invitación</h3>
     <p class="install-sub">Tenla siempre a la mano en tu pantalla de inicio: tu pase, tu mesa y la cuenta regresiva.</p>
 
-    <!-- Android con instalación de un toque -->
-    <div class="install-steps" data-variant="android-prompt">
-      <button type="button" class="btn shine" id="installNow">Instalar en mi teléfono</button>
+    <!-- Pestañas: se abre la del teléfono detectado, pero se puede cambiar -->
+    <div class="install-tabs" role="tablist">
+      <button type="button" role="tab" data-tab="ios">iPhone</button>
+      <button type="button" role="tab" data-tab="android">Android</button>
     </div>
 
-    <!-- Android sin instalación directa (otros navegadores) -->
-    <ol class="install-steps" data-variant="android">
-      <li><i>1</i><span>Toca el menú <b class="ico" set:html={dotsIcon}></b> arriba a la derecha.</span></li>
-      <li><i>2</i><span>Elige <b>“Instalar aplicación”</b> o <b>“Agregar a pantalla principal”</b>.</span></li>
-      <li><i>3</i><span>Confirma con <b>“Instalar”</b> o <b>“Agregar”</b>.</span></li>
-    </ol>
+    <!-- iPhone (Safari) -->
+    <div class="install-pane" data-pane="ios">
+      <ol class="install-steps">
+        <li><i>1</i><span>Abre la invitación en <b>Safari</b> y toca <b class="ico" set:html={shareIcon}></b> <b>Compartir</b>.</span></li>
+        <li><i>2</i><span>Desliza y elige <b class="ico" set:html={plusIcon}></b> <b>“Agregar a inicio”</b>.</span></li>
+        <li><i>3</i><span>Toca <b>“Agregar”</b> arriba a la derecha.</span></li>
+      </ol>
+      <p class="install-note">
+        ¿La abriste desde WhatsApp? Primero toca <b class="ico" set:html={compassIcon}></b> o “Abrir en Safari”.
+      </p>
+    </div>
 
-    <!-- iPhone en Safari -->
-    <ol class="install-steps" data-variant="ios">
-      <li><i>1</i><span>Toca <b class="ico" set:html={shareIcon}></b> <b>Compartir</b> en la barra de Safari.</span></li>
-      <li><i>2</i><span>Desliza y elige <b class="ico" set:html={plusIcon}></b> <b>“Agregar a inicio”</b>.</span></li>
-      <li><i>3</i><span>Toca <b>“Agregar”</b> arriba a la derecha.</span></li>
-    </ol>
-    <p class="install-note" data-variant="ios">
-      ¿La abriste desde WhatsApp? Primero toca <b class="ico" set:html={compassIcon}></b> o “Abrir en Safari”.
-    </p>
-
-    <!-- Dentro de WhatsApp / Instagram / Facebook en Android -->
-    <ol class="install-steps" data-variant="inapp">
-      <li><i>1</i><span>Toca el menú <b class="ico" set:html={dotsIcon}></b> arriba a la derecha.</span></li>
-      <li><i>2</i><span>Elige <b>“Abrir en Chrome”</b> (o en tu navegador).</span></li>
-      <li><i>3</i><span>Ahí toca <b class="ico" set:html={dotsIcon}></b> y <b>“Agregar a pantalla principal”</b>.</span></li>
-    </ol>
+    <!-- Android (Chrome) -->
+    <div class="install-pane" data-pane="android">
+      <button type="button" class="btn shine install-now" id="installNow">Instalar en mi teléfono</button>
+      <ol class="install-steps">
+        <li><i>1</i><span>Abre la invitación en <b>Chrome</b> y toca el menú <b class="ico" set:html={dotsIcon}></b> arriba a la derecha.</span></li>
+        <li><i>2</i><span>Elige <b>“Instalar aplicación”</b> o <b>“Agregar a pantalla principal”</b>.</span></li>
+        <li><i>3</i><span>Confirma con <b>“Instalar”</b> o <b>“Agregar”</b>.</span></li>
+      </ol>
+      <p class="install-note">
+        ¿La abriste desde WhatsApp? Toca <b class="ico" set:html={dotsIcon}></b> y elige “Abrir en Chrome” (o en tu navegador).
+      </p>
+    </div>
 
     <div class="install-actions">
       <button type="button" class="install-link" id="installLater">Ahora no</button>
@@ -128,15 +131,52 @@ const compassIcon =
     font-size: 12.5px;
     line-height: 1.5;
   }
-  .install-steps {
+  .install-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 12px;
+    padding: 4px;
+    border-radius: 14px;
+    background: var(--color-sand);
+  }
+  .install-tabs button {
+    flex: 1;
+    padding: 9px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-soft);
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .install-tabs button.on {
+    background: #fff;
+    color: var(--color-gold-d);
+    font-weight: 500;
+    box-shadow: 0 4px 12px -8px rgba(74, 65, 54, 0.6);
+  }
+  .install-pane {
     display: none;
+  }
+  .install-pane.on {
+    display: block;
+  }
+  .install-now {
+    display: none;
+    margin-bottom: 8px;
+  }
+  .install-now.on {
+    display: flex;
+  }
+  .install-steps {
     margin: 0 0 6px;
     padding: 0;
     list-style: none;
     text-align: left;
-  }
-  .install-steps.on {
-    display: block;
   }
   .install-steps li {
     display: flex;
@@ -192,7 +232,6 @@ const compassIcon =
     stroke: none;
   }
   .install-note {
-    display: none;
     margin: 6px 0 0;
     padding: 10px 12px;
     border-radius: 12px;
@@ -200,9 +239,6 @@ const compassIcon =
     color: var(--color-ink);
     font-size: 12px;
     line-height: 1.5;
-  }
-  .install-note.on {
-    display: block;
   }
   .install-actions {
     display: flex;
@@ -278,7 +314,6 @@ const compassIcon =
   const ua = navigator.userAgent;
   const isIOS = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
   const isAndroid = /android/i.test(ua);
-  const isInApp = /FBAN|FBAV|Instagram|WhatsApp|Line\/|Snapchat|TikTok|; wv\)/i.test(ua);
   const standalone =
     window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
   let deferred: any = null;
@@ -290,19 +325,25 @@ const compassIcon =
     try { localStorage.setItem(key, value); } catch (e) {}
   }
 
-  function variant() {
-    if (isAndroid && isInApp) return "inapp";
-    if (isAndroid && deferred) return "android-prompt";
-    if (isAndroid) return "android";
-    return "ios";
+  function showTab(tab: string) {
+    sheet?.querySelectorAll<HTMLElement>("[data-tab]").forEach((el) => {
+      const on = el.dataset.tab === tab;
+      el.classList.toggle("on", on);
+      el.setAttribute("aria-selected", String(on));
+    });
+    sheet?.querySelectorAll<HTMLElement>("[data-pane]").forEach((el) => {
+      el.classList.toggle("on", el.dataset.pane === tab);
+    });
+    // Instalación de un toque solo cuando Chrome lo permite.
+    document.getElementById("installNow")?.classList.toggle("on", tab === "android" && !!deferred);
   }
+  sheet?.querySelectorAll<HTMLElement>("[data-tab]").forEach((el) =>
+    el.addEventListener("click", () => showTab(el.dataset.tab || "ios"))
+  );
 
   function open() {
     if (!sheet || standalone) return;
-    const v = variant();
-    sheet.querySelectorAll<HTMLElement>("[data-variant]").forEach((el) => {
-      el.classList.toggle("on", el.dataset.variant === v);
-    });
+    showTab(isAndroid ? "android" : "ios");
     sheet.classList.add("show");
     sheet.setAttribute("aria-hidden", "false");
   }
