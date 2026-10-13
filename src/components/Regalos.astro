@@ -1,20 +1,30 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
+import { MESAS_REGALOS } from "../lib/config";
 ---
 
 <div class="wrap">
   <SectionTitle title="Regalos" />
   <div class="card">
-    <div class="dcard" style="padding-bottom:14px">
+    <div class="dcard" style="padding-bottom:12px">
       <div class="ic" set:html={icon("gift")} />
       <div class="tx">
-        <b>Mesa de Regalos</b><span id="searsLabel"
-          >Disponible próximamente</span
-        >
+        <b>Mesas de Regalos</b><span>Elige la tienda que prefieras</span>
       </div>
     </div>
-    <a class="btn ghost" id="btnSears" target="_blank" rel="noopener" style="text-decoration:none"><span set:html={icon("gift")} />Ver lista de regalos</a>
+    {MESAS_REGALOS.map((mesa) => (
+      <a
+        class={mesa.url ? "registry" : "registry soon"}
+        data-registry={mesa.id}
+        href={mesa.url || undefined}
+        target="_blank"
+        rel="noopener"
+      >
+        <span class="registry-name">{mesa.tienda}</span>
+        <span class="registry-state">{mesa.url ? "Ver lista" : "Próximamente"}</span>
+      </a>
+    ))}
   </div>
   <div class="card">
     <div class="dcard" style="padding-bottom:10px">
@@ -57,18 +67,23 @@ import { icon } from "../lib/icons";
     set("bkBanco", cfg.banco);
     set("bkTitular", cfg.titular);
     set("bkClabe", cfg.clabe);
-    const sears = document.getElementById("btnSears");
-    const lbl = document.getElementById("searsLabel");
-    if (cfg.sears_url) {
-      if (lbl) lbl.textContent = "Lista disponible";
-      sears?.setAttribute("href", cfg.sears_url);
-    } else {
-      sears?.addEventListener("click", (event) => {
-        event.preventDefault();
-        toast("Lista disponible próximamente");
-      });
-    }
+    // Si el Apps Script trae el link (sears_url / liverpool_url), se activa la tienda.
+    document.querySelectorAll<HTMLAnchorElement>("[data-registry]").forEach((link) => {
+      const url = cfg[link.dataset.registry + "_url"];
+      if (!url || link.getAttribute("href")) return;
+      link.href = url;
+      link.classList.remove("soon");
+      const state = link.querySelector(".registry-state");
+      if (state) state.textContent = "Ver lista";
+    });
   });
+  document.querySelectorAll<HTMLAnchorElement>("[data-registry]").forEach((link) =>
+    link.addEventListener("click", (event) => {
+      if (link.getAttribute("href")) return;
+      event.preventDefault();
+      toast("Lista disponible próximamente");
+    }),
+  );
   document.querySelectorAll("[data-copy]").forEach((b) =>
     b.addEventListener("click", () => {
       const id = (b as HTMLElement).dataset.copy!;
@@ -78,3 +93,47 @@ import { icon } from "../lib/icons";
     }),
   );
 </script>
+
+<style>
+  .registry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--color-gold);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--color-ink);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .registry:active {
+    background: var(--color-sand);
+  }
+  .registry-name {
+    font-family: var(--font-serif);
+    font-size: 21px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .registry-state {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--color-gold);
+    color: #fff;
+    font-size: 10.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+  }
+  .registry.soon {
+    border-style: dashed;
+    border-color: var(--color-line);
+  }
+  .registry.soon .registry-state {
+    background: var(--color-sand);
+    color: var(--color-gold-d);
+  }
+</style>

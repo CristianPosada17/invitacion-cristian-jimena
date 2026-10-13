@@ -61,3 +61,10 @@ export function getGuestNameHint(): string {
   if (!key) return "";
   return recall(key);
 }
+
+// Mesas de regalos. Pega aquí cada link cuando esté listo (también se puede poner
+// en el Apps Script como SEARS_URL / LIVERPOOL_URL); mientras esté vacío se muestra "Próximamente".
+export const MESAS_REGALOS = [
+  { id: "sears", tienda: "Sears", url: "" },
+  { id: "liverpool", tienda: "Liverpool", url: "" },
+];

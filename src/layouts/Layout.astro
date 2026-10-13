@@ -109,7 +109,7 @@ const shareImage = siteUrl + "/og-boda.png?v=3";
       // Además de cada bloque, sus tarjetas/fotos/renglones entran uno tras otro.
       const itemTargets = Array.from(
         document.querySelectorAll<HTMLElement>(
-          "#app .landing-section :is(.ecard, .venue, .card, .tl .it, .gallery-item, .gallery-feature, .copyrow, .story-photo, .std, .notice, .date-card, .music-card, .weather-card, .cd-night, .thanks)"
+          "#app .landing-section :is(.ecard, .venue, .card, .tl .it, .gallery-item, .gallery-feature, .registry, .copyrow, .story-photo, .std, .notice, .date-card, .music-card, .weather-card, .cd-night, .thanks)"
         )
       ).filter((el) => !el.classList.contains("reveal"));
       const itemObserver = "IntersectionObserver" in window
