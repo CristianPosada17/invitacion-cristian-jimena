@@ -263,16 +263,6 @@ body[data-rsvp="pending"] #nav a[data-section="confirmacion"]::after { content: 
 .toast { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: #2a251c; color: #fff; font-size: 13px; padding: 11px 20px; border-radius: 30px; opacity: 0; transition: .3s; z-index: 190; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Pop-up de instalación (PWA) */
-#installPrompt { position: absolute; left: 14px; right: 14px; bottom: 96px; z-index: 120; background: var(--color-paper); border: 1px solid var(--color-line); border-radius: 16px; padding: 14px 16px; box-shadow: 0 18px 40px -18px rgba(80,60,20,.5); display: none; align-items: center; gap: 12px; }
-#installPrompt.show { display: flex; }
-#installPrompt img { width: 40px; height: 40px; object-fit: contain; }
-#installPrompt .txt b { font-size: 13px; display: block; }
-#installPrompt .txt span { font-size: 11px; color: var(--color-soft); }
-#installPrompt .actions { margin-left: auto; display: flex; gap: 6px; align-items: center; }
-#installPrompt .actions button { border: 0; cursor: pointer; font-family: var(--font-sans); border-radius: 8px; padding: 8px 12px; font-size: 12px; letter-spacing: .5px; }
-#installPrompt .go { background: var(--color-gold); color: #fff; }
-#installPrompt .close { background: transparent; color: var(--color-soft); }
 
 /* ============================================================
    REVEAL al hacer scroll

@@ -1,19 +1,234 @@
 ---
-// Pop-up para "instalar" la invitación como app (PWA)
+// Guía para guardar la invitación como app (PWA).
+// Ningún navegador permite instalar una página sin que la persona lo confirme,
+// así que mostramos los pasos exactos según el teléfono:
+//  · Android/Chrome: botón "Instalar" de un toque (evento beforeinstallprompt).
+//  · iPhone/Safari: Compartir → "Agregar a inicio".
+//  · Abierta dentro de WhatsApp/Instagram/Facebook: primero abrirla en Safari o Chrome.
+// También se puede abrir desde cualquier botón con [data-install-open].
+const shareIcon =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>';
+const plusIcon =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+const dotsIcon =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>';
+const compassIcon =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>';
 ---
-<div id="installPrompt">
-  <img src="/logo-boda.png" alt="J&C" />
-  <div class="txt">
-    <b>Instala la invitación</b>
-    <span id="installMsg">Ábrela como app, se ve mucho mejor</span>
-  </div>
-  <div class="actions">
-    <button class="close" id="installClose">Ahora no</button>
-    <button class="go" id="installGo">Instalar</button>
+<div id="installSheet" class="install" aria-hidden="true">
+  <div class="install-backdrop" data-install-close></div>
+  <div class="install-panel" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+    <div class="install-grip" aria-hidden="true"></div>
+    <img class="install-logo" src="/icons/icon-192.png" alt="" />
+    <h3 id="installTitle">Guarda tu invitación</h3>
+    <p class="install-sub">Tenla siempre a la mano en tu pantalla de inicio: tu pase, tu mesa y la cuenta regresiva.</p>
+
+    <!-- Android con instalación de un toque -->
+    <div class="install-steps" data-variant="android-prompt">
+      <button type="button" class="btn shine" id="installNow">Instalar en mi teléfono</button>
+    </div>
+
+    <!-- Android sin instalación directa (otros navegadores) -->
+    <ol class="install-steps" data-variant="android">
+      <li><i>1</i><span>Toca el menú <b class="ico" set:html={dotsIcon}></b> arriba a la derecha.</span></li>
+      <li><i>2</i><span>Elige <b>“Instalar aplicación”</b> o <b>“Agregar a pantalla principal”</b>.</span></li>
+      <li><i>3</i><span>Confirma con <b>“Instalar”</b> o <b>“Agregar”</b>.</span></li>
+    </ol>
+
+    <!-- iPhone en Safari -->
+    <ol class="install-steps" data-variant="ios">
+      <li><i>1</i><span>Toca <b class="ico" set:html={shareIcon}></b> <b>Compartir</b> en la barra de Safari.</span></li>
+      <li><i>2</i><span>Desliza y elige <b class="ico" set:html={plusIcon}></b> <b>“Agregar a inicio”</b>.</span></li>
+      <li><i>3</i><span>Toca <b>“Agregar”</b> arriba a la derecha.</span></li>
+    </ol>
+    <p class="install-note" data-variant="ios">
+      ¿La abriste desde WhatsApp? Primero toca <b class="ico" set:html={compassIcon}></b> o “Abrir en Safari”.
+    </p>
+
+    <!-- Dentro de WhatsApp / Instagram / Facebook en Android -->
+    <ol class="install-steps" data-variant="inapp">
+      <li><i>1</i><span>Toca el menú <b class="ico" set:html={dotsIcon}></b> arriba a la derecha.</span></li>
+      <li><i>2</i><span>Elige <b>“Abrir en Chrome”</b> (o en tu navegador).</span></li>
+      <li><i>3</i><span>Ahí toca <b class="ico" set:html={dotsIcon}></b> y <b>“Agregar a pantalla principal”</b>.</span></li>
+    </ol>
+
+    <div class="install-actions">
+      <button type="button" class="install-link" id="installLater">Ahora no</button>
+      <button type="button" class="install-link strong" id="installDone">Ya la guardé</button>
+    </div>
   </div>
 </div>
 
+<style>
+  .install {
+    position: absolute;
+    inset: 0;
+    z-index: 150;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .install.show {
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .install-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(33, 29, 23, 0.45);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .install.show .install-backdrop {
+    opacity: 1;
+  }
+  .install-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 12px 24px max(22px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(184, 150, 90, 0.45);
+    border-radius: 24px 24px 0 0;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(230, 212, 171, 0.45), transparent 60%),
+      var(--color-paper);
+    box-shadow: 0 -18px 40px -20px rgba(33, 29, 23, 0.6);
+    text-align: center;
+    transform: translateY(105%);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .install.show .install-panel {
+    transform: none;
+  }
+  .install-grip {
+    width: 42px;
+    height: 4px;
+    margin: 0 auto 14px;
+    border-radius: 4px;
+    background: var(--color-line);
+  }
+  .install-logo {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 22px -12px rgba(33, 29, 23, 0.8);
+  }
+  .install-panel h3 {
+    margin: 12px 0 4px;
+    font-family: var(--font-serif);
+    font-size: 25px;
+    font-weight: 500;
+  }
+  .install-sub {
+    margin: 0 auto 16px;
+    max-width: 300px;
+    color: var(--color-soft);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .install-steps {
+    display: none;
+    margin: 0 0 6px;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+  }
+  .install-steps.on {
+    display: block;
+  }
+  .install-steps li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 2px;
+    border-bottom: 1px dashed var(--color-line);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+  .install-steps li:last-child {
+    border-bottom: 0;
+  }
+  .install-steps li i {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-gold-d);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    font-style: normal;
+  }
+  .install-steps b {
+    font-weight: 500;
+  }
+  .install-panel .ico {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    margin: 0 1px;
+    vertical-align: middle;
+    border: 1px solid var(--color-line);
+    border-radius: 7px;
+    background: #fff;
+    color: #2f7bf6;
+  }
+  .install-panel .ico :global(svg) {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .install-panel .ico :global(circle[r="1.6"]) {
+    fill: currentColor;
+    stroke: none;
+  }
+  .install-note {
+    display: none;
+    margin: 6px 0 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--color-sand);
+    color: var(--color-ink);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .install-note.on {
+    display: block;
+  }
+  .install-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+  }
+  .install-link {
+    padding: 10px 6px;
+    border: 0;
+    background: transparent;
+    color: var(--color-soft);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .install-link.strong {
+    color: var(--color-gold-d);
+    font-weight: 500;
+  }
+</style>
+
 <script>
+  import { getToken, getGuestNameHint } from "../lib/config";
+
   // Service worker: en DESARROLLO (localhost) lo desactivamos y limpiamos caché
   // para no servir versiones viejas. En PRODUCCIÓN sí se registra (para instalar).
   const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
@@ -26,45 +241,126 @@
     window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
   }
 
-  const promptEl = document.getElementById("installPrompt");
-  const goBtn = document.getElementById("installGo");
-  const closeBtn = document.getElementById("installClose");
-  const msg = document.getElementById("installMsg");
-  let deferred: any = null;
+  // La app instalada debe abrir el link personalizado del invitado (con su nombre y pase),
+  // así que el manifest se genera con su ?g= como dirección de inicio.
+  const token = getToken();
+  if (token) {
+    const start = new URL("/", location.origin);
+    start.searchParams.set("g", token);
+    const hintName = getGuestNameHint();
+    if (hintName) start.searchParams.set("n", hintName);
+    const abs = (path: string) => new URL(path, location.origin).toString();
+    const manifest = {
+      name: "Jimena & Cristian · Boda",
+      short_name: "Boda J&C",
+      description: "Nuestra invitación de boda · 3 de Abril 2027",
+      start_url: start.toString(),
+      scope: abs("/"),
+      id: abs("/"),
+      display: "standalone",
+      orientation: "portrait",
+      background_color: "#e7dab6",
+      theme_color: "#e6d4ab",
+      lang: "es",
+      icons: [
+        { src: abs("/icons/icon-192.png"), sizes: "192x192", type: "image/png", purpose: "any" },
+        { src: abs("/icons/icon-512.png"), sizes: "512x512", type: "image/png", purpose: "any" },
+        { src: abs("/icons/icon-maskable.png"), sizes: "512x512", type: "image/png", purpose: "maskable" },
+      ],
+    };
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (link) {
+      link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" }));
+    }
+  }
 
-  const dismissed = localStorage.getItem("pwa-dismissed") === "1";
+  const sheet = document.getElementById("installSheet");
+  const ua = navigator.userAgent;
+  const isIOS = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+  const isAndroid = /android/i.test(ua);
+  const isInApp = /FBAN|FBAV|Instagram|WhatsApp|Line\/|Snapchat|TikTok|; wv\)/i.test(ua);
   const standalone =
     window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+  let deferred: any = null;
 
-  function show() { if (!dismissed && !standalone) promptEl?.classList.add("show"); }
-  function hide() { promptEl?.classList.remove("show"); }
-
-  closeBtn?.addEventListener("click", () => { hide(); localStorage.setItem("pwa-dismissed", "1"); });
-
-  // Android / Chrome / Edge: evento nativo de instalación
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferred = e;
-    setTimeout(show, 1400);
-  });
-  goBtn?.addEventListener("click", async () => {
-    if (deferred) {
-      deferred.prompt();
-      const res = await deferred.userChoice;
-      deferred = null;
-      hide();
-      if (res && res.outcome === "accepted") localStorage.setItem("pwa-dismissed", "1");
-    }
-  });
-
-  // iOS / Safari: no hay instalación programática → mostrar instrucciones
-  const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (isiOS && !standalone) {
-    if (goBtn) goBtn.textContent = "Ver cómo";
-    if (msg) msg.textContent = 'Agrégala a tu pantalla de inicio';
-    goBtn?.addEventListener("click", () => {
-      if (msg) msg.textContent = "En Safari: toca Compartir ⬆ y luego “Agregar a inicio”";
-    });
-    setTimeout(show, 1600);
+  function read(key: string) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
   }
+  function write(key: string, value: string) {
+    try { localStorage.setItem(key, value); } catch (e) {}
+  }
+
+  function variant() {
+    if (isAndroid && isInApp) return "inapp";
+    if (isAndroid && deferred) return "android-prompt";
+    if (isAndroid) return "android";
+    return "ios";
+  }
+
+  function open() {
+    if (!sheet || standalone) return;
+    const v = variant();
+    sheet.querySelectorAll<HTMLElement>("[data-variant]").forEach((el) => {
+      el.classList.toggle("on", el.dataset.variant === v);
+    });
+    sheet.classList.add("show");
+    sheet.setAttribute("aria-hidden", "false");
+  }
+  function close() {
+    sheet?.classList.remove("show");
+    sheet?.setAttribute("aria-hidden", "true");
+  }
+
+  // Aparece sola una vez que el invitado ya vio la portada, solo en celulares,
+  // y no vuelve a molestar si dijo "Ya la guardé" (o por 2 días si dijo "Ahora no").
+  function shouldAutoOpen() {
+    if (standalone || !(isIOS || isAndroid)) return false;
+    if (read("pwa-dismissed") === "1") return false;
+    const snooze = Number(read("pwa-snooze") || 0);
+    return Date.now() - snooze > 2 * 86400000;
+  }
+  function scheduleAutoOpen() {
+    if (!shouldAutoOpen()) return;
+    window.setTimeout(() => {
+      if (!sheet?.classList.contains("show")) open();
+    }, 6000);
+  }
+  if (document.getElementById("intro")) {
+    document.body.addEventListener("intro:done", scheduleAutoOpen, { once: true });
+  } else {
+    scheduleAutoOpen();
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferred = event;
+  });
+  window.addEventListener("appinstalled", () => {
+    write("pwa-dismissed", "1");
+    close();
+  });
+
+  document.getElementById("installNow")?.addEventListener("click", async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    const choice = await deferred.userChoice;
+    deferred = null;
+    if (choice?.outcome === "accepted") write("pwa-dismissed", "1");
+    close();
+  });
+  document.getElementById("installLater")?.addEventListener("click", () => {
+    write("pwa-snooze", String(Date.now()));
+    close();
+  });
+  document.getElementById("installDone")?.addEventListener("click", () => {
+    write("pwa-dismissed", "1");
+    close();
+  });
+  sheet?.querySelectorAll("[data-install-close]").forEach((el) => el.addEventListener("click", close));
+
+  // Botones en la invitación que abren la guía a petición.
+  document.querySelectorAll("[data-install-open]").forEach((el) => {
+    if (standalone) (el as HTMLElement).closest("[data-install-card]")?.remove();
+    el.addEventListener("click", open);
+  });
 </script>

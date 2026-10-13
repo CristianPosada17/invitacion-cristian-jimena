@@ -2,17 +2,29 @@
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
 // Cada sede reúne sus eventos y su botón de mapa (antes estaba repetido en Ubicaciones).
+// "Cómo llegar" abre un menú con enlaces directos a Google Maps, Apple Maps y Waze:
+// son <a> normales (no window.open) para que el teléfono abra la app de mapas.
+const q = (texto: string) => encodeURIComponent(texto);
 const sedes = [
   {
     icono: "church",
     nombre: "Templo de Fátima",
-    mapa: "Templo de Fátima Durango",
+    mapas: {
+      google: "https://www.google.com/maps/search/?api=1&query=" + q("Templo de Fátima, Durango, Dgo."),
+      apple: "https://maps.apple.com/?q=" + q("Templo de Fátima, Durango, Dgo."),
+      waze: "https://waze.com/ul?q=" + q("Templo de Fátima Durango") + "&navigate=yes",
+    },
     eventos: [{ nombre: "Ceremonia religiosa", hora: "5:00 PM" }],
   },
   {
     icono: "cheers",
     nombre: "Salón Casa Meraki",
-    mapa: "Salón Casa Meraki Durango",
+    // Ubicación exacta del salón (link compartido por los novios).
+    mapas: {
+      google: "https://maps.app.goo.gl/zRbWCMWQZYUAJLxd6",
+      apple: "https://maps.apple.com/?q=" + q("Casa Meraki") + "&ll=24.154039,-104.7045603",
+      waze: "https://waze.com/ul?ll=24.154039,-104.7045603&navigate=yes",
+    },
     eventos: [
       { nombre: "Ceremonia civil", hora: "8:00 PM" },
       { nombre: "Recepción", hora: "9:00 PM" },
@@ -44,14 +56,147 @@ const sedes = [
           <li><span>{evento.nombre}</span><b>{evento.hora}</b></li>
         ))}
       </ul>
-      <button class="btn ghost venue-map" data-maps={sede.mapa}><span set:html={icon("pin")}></span>Cómo llegar</button>
+      <button
+        type="button"
+        class="btn ghost venue-map"
+        data-map-name={sede.nombre}
+        data-map-google={sede.mapas.google}
+        data-map-apple={sede.mapas.apple}
+        data-map-waze={sede.mapas.waze}
+      ><span set:html={icon("pin")}></span>Cómo llegar</button>
     </div>
   ))}
 
   <button class="btn dark mt" id="btnCal"><span set:html={icon("cal")}></span>Agregar al calendario</button>
 </div>
 
+<div class="map-sheet" id="mapSheet" aria-hidden="true">
+  <div class="map-backdrop" data-map-close></div>
+  <div class="map-panel" role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+    <div class="map-grip" aria-hidden="true"></div>
+    <span class="map-kicker">Cómo llegar a</span>
+    <h3 id="mapTitle">Salón</h3>
+    <a class="map-opt" id="mapGoogle" target="_blank" rel="noopener">
+      <i style="background:#e8f0fe;color:#1a73e8" set:html={icon("pin")}></i>
+      <span><b>Google Maps</b><small>Abre la app o el navegador</small></span>
+    </a>
+    <a class="map-opt" id="mapApple" target="_blank" rel="noopener">
+      <i style="background:#eef2f6;color:#3a3a3c" set:html={icon("map")}></i>
+      <span><b>Apple Maps</b><small>Mapas del iPhone</small></span>
+    </a>
+    <a class="map-opt" id="mapWaze" target="_blank" rel="noopener">
+      <i style="background:#e4f7fd;color:#05a3d6" set:html={icon("pin")}></i>
+      <span><b>Waze</b><small>Navegación paso a paso</small></span>
+    </a>
+    <button type="button" class="map-cancel" data-map-close>Cancelar</button>
+  </div>
+</div>
+
 <style>
+  .map-sheet {
+    position: absolute;
+    inset: 0;
+    z-index: 160;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .map-sheet.show {
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .map-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(33, 29, 23, 0.45);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .map-sheet.show .map-backdrop {
+    opacity: 1;
+  }
+  .map-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 12px 20px max(18px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(184, 150, 90, 0.45);
+    border-radius: 24px 24px 0 0;
+    background: var(--color-paper);
+    box-shadow: 0 -18px 40px -20px rgba(33, 29, 23, 0.6);
+    text-align: center;
+    transform: translateY(105%);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .map-sheet.show .map-panel {
+    transform: none;
+  }
+  .map-grip {
+    width: 42px;
+    height: 4px;
+    margin: 0 auto 14px;
+    border-radius: 4px;
+    background: var(--color-line);
+  }
+  .map-kicker {
+    color: var(--color-gold-d);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .map-panel h3 {
+    margin: 4px 0 14px;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .map-opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 9px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--color-ink);
+    text-align: left;
+    text-decoration: none;
+  }
+  .map-opt:active {
+    background: var(--color-sand);
+  }
+  .map-opt i {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 11px;
+  }
+  .map-opt b {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .map-opt small {
+    color: var(--color-soft);
+    font-size: 11.5px;
+  }
+  .map-cancel {
+    width: 100%;
+    margin-top: 4px;
+    padding: 12px;
+    border: 0;
+    background: transparent;
+    color: var(--color-soft);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
   .date-card {
     position: relative;
     display: flex;
@@ -160,12 +305,35 @@ const sedes = [
 </style>
 
 <script>
-  document.querySelectorAll<HTMLElement>("[data-maps]").forEach((b) =>
+  // El menú vive dentro del marco de la invitación (no dentro del área con scroll).
+  const sheet = document.getElementById("mapSheet");
+  const frame = document.getElementById("frame");
+  if (sheet && frame) frame.appendChild(sheet);
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  function closeMap() {
+    sheet?.classList.remove("show");
+    sheet?.setAttribute("aria-hidden", "true");
+  }
+  document.querySelectorAll<HTMLElement>("[data-map-google]").forEach((b) =>
     b.addEventListener("click", () => {
-      const q = b.dataset.maps || "";
-      window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q), "_blank");
+      if (!sheet) return;
+      const set = (id: string, href = "") => document.getElementById(id)?.setAttribute("href", href);
+      set("mapGoogle", b.dataset.mapGoogle);
+      set("mapApple", b.dataset.mapApple);
+      set("mapWaze", b.dataset.mapWaze);
+      const title = document.getElementById("mapTitle");
+      if (title) title.textContent = b.dataset.mapName || "";
+      // En iPhone, Apple Maps va primero.
+      const apple = document.getElementById("mapApple");
+      const google = document.getElementById("mapGoogle");
+      if (apple && google && isIOS) google.before(apple);
+      sheet.classList.add("show");
+      sheet.setAttribute("aria-hidden", "false");
     })
   );
+  sheet?.querySelectorAll("[data-map-close]").forEach((el) => el.addEventListener("click", closeMap));
+  sheet?.querySelectorAll(".map-opt").forEach((el) => el.addEventListener("click", () => window.setTimeout(closeMap, 300)));
 
   document.getElementById("btnCal")?.addEventListener("click", () => {
     const ics = [

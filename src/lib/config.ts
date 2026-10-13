@@ -21,16 +21,29 @@ export const WEATHER_LOCATION = {
 export const WEDDING = new Date("2027-04-03T17:00:00-06:00");
 export const REVEAL_DAYS_DEFAULT = 15;
 
-// El token del link personalizado (?g=...). Se conserva en la sesión para
-// que la identidad del invitado no se pierda al navegar entre páginas.
+// El token del link personalizado (?g=...). Se guarda en el dispositivo (localStorage)
+// para que la identidad del invitado no se pierda al navegar ni al abrir la app instalada,
+// que arranca sin los parámetros del link.
+function remember(key: string, value: string) {
+  try { sessionStorage.setItem(key, value); } catch (e) {}
+  try { localStorage.setItem(key, value); } catch (e) {}
+}
+function recall(key: string): string {
+  try {
+    const v = sessionStorage.getItem(key);
+    if (v) return v;
+  } catch (e) {}
+  try { return localStorage.getItem(key) || ""; } catch (e) { return ""; }
+}
+
 export function getToken(): string {
   if (typeof window === "undefined") return "";
   const fromUrl = new URLSearchParams(window.location.search).get("g");
   if (fromUrl) {
-    try { sessionStorage.setItem("g", fromUrl); } catch (e) {}
+    remember("g", fromUrl);
     return fromUrl;
   }
-  try { return sessionStorage.getItem("g") || ""; } catch (e) { return ""; }
+  return recall("g");
 }
 
 // Los enlaces nuevos incluyen una pista del nombre para personalizar el primer
@@ -42,9 +55,9 @@ export function getGuestNameHint(): string {
   const fromUrl = new URLSearchParams(window.location.search).get("n");
   const key = token ? "guest_name:" + token : "";
   if (fromUrl && key) {
-    try { sessionStorage.setItem(key, fromUrl); } catch (e) {}
+    remember(key, fromUrl);
     return fromUrl;
   }
   if (!key) return "";
-  try { return sessionStorage.getItem(key) || ""; } catch (e) { return ""; }
+  return recall(key);
 }

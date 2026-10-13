@@ -14,9 +14,7 @@ import { icon } from "../lib/icons";
         >
       </div>
     </div>
-    <button class="btn ghost" id="btnSears"
-      ><span set:html={icon("gift")} />Ver lista de regalos</button
-    >
+    <a class="btn ghost" id="btnSears" target="_blank" rel="noopener" style="text-decoration:none"><span set:html={icon("gift")} />Ver lista de regalos</a>
   </div>
   <div class="card">
     <div class="dcard" style="padding-bottom:10px">
@@ -63,13 +61,12 @@ import { icon } from "../lib/icons";
     const lbl = document.getElementById("searsLabel");
     if (cfg.sears_url) {
       if (lbl) lbl.textContent = "Lista disponible";
-      sears?.addEventListener("click", () =>
-        window.open(cfg.sears_url, "_blank"),
-      );
+      sears?.setAttribute("href", cfg.sears_url);
     } else {
-      sears?.addEventListener("click", () =>
-        toast("Lista disponible próximamente"),
-      );
+      sears?.addEventListener("click", (event) => {
+        event.preventDefault();
+        toast("Lista disponible próximamente");
+      });
     }
   });
   document.querySelectorAll("[data-copy]").forEach((b) =>

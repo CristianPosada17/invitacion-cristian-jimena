@@ -1,7 +1,7 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
-import { SPOTIFY_EMBED } from "../lib/config";
+import { SPOTIFY_EMBED, PLAYLIST } from "../lib/config";
 ---
 <div class="wrap">
   <SectionTitle title="Música" sub="Comparte tus canciones favoritas" />
@@ -32,7 +32,7 @@ import { SPOTIFY_EMBED } from "../lib/config";
     </div>
     <div class="music-request">
       <span>¿Qué canción no puede faltar?</span>
-      <button class="btn sage" id="btnPlaylist"><span set:html={icon("plus")}></span>Agregar canción</button>
+      <a class="btn sage" id="btnPlaylist" href={PLAYLIST} target="_blank" rel="noopener" style="text-decoration:none"><span set:html={icon("plus")}></span>Agregar canción</a>
       <p>La propuesta se abrirá en Spotify para que puedas añadirla a la lista.</p>
     </div>
   </div>
@@ -178,7 +178,4 @@ import { SPOTIFY_EMBED } from "../lib/config";
   }
 </style>
 
-<script>
-  import { PLAYLIST } from "../lib/config";
-  document.getElementById("btnPlaylist")?.addEventListener("click", () => window.open(PLAYLIST, "_blank"));
-</script>
+
