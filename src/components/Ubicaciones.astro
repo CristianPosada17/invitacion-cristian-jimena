@@ -5,9 +5,26 @@ import monoRaw from "../../public/monograma-jc.svg?raw";
 const monoViewBox = /viewBox="([^"]+)"/.exec(monoRaw)?.[1] ?? "0 0 100 100";
 const monoPath = /\sd="([^"]+)"/.exec(monoRaw)?.[1] ?? "";
 const MERAKI_MAPS = "https://maps.app.goo.gl/zRbWCMWQZYUAJLxd6";
+import fs from "node:fs";
+import path from "node:path";
+// Cualquier foto que se agregue a public/casa-meraki aparece en el carrusel del salón.
+const dirMeraki = path.join(process.cwd(), "public", "casa-meraki");
+const fotosMeraki = fs.existsSync(dirMeraki)
+  ? fs.readdirSync(dirMeraki).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+  : [];
 ---
 <div class="wrap" style="padding-top:18px">
-  <div class="card croquis-card" id="croquisCard">
+  <div class="card croquis-card" id="croquisCard" data-letter="seal">
+    {fotosMeraki.length > 0 && (
+      <div class="venue-photos">
+        <div class="venue-track" aria-label="Fotos del Salón Casa Meraki">
+          {fotosMeraki.map((foto) => (
+            <img src={`/casa-meraki/${foto}`} alt="Salón Casa Meraki" loading="lazy" decoding="async" />
+          ))}
+        </div>
+        <span class="venue-photos-label">Salón Casa Meraki{fotosMeraki.length > 1 ? " · desliza" : ""}</span>
+      </div>
+    )}
     <div class="eyebrow">Croquis del salón</div>
     <div class="croquis-map" id="croquisMap">
 <svg class="croquis-svg" viewBox="0 0 600 691" role="img" aria-labelledby="croquisTitle">
@@ -170,6 +187,39 @@ const MERAKI_MAPS = "https://maps.app.goo.gl/zRbWCMWQZYUAJLxd6";
 </div>
 
 <style>
+  .venue-photos {
+    position: relative;
+    margin: 0 -6px 16px;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  .venue-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .venue-track::-webkit-scrollbar {
+    display: none;
+  }
+  .venue-track img {
+    flex: 0 0 100%;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    scroll-snap-align: center;
+  }
+  .venue-photos-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 30px 14px 10px;
+    background: linear-gradient(transparent, rgba(18, 14, 10, 0.6));
+    color: #fff;
+    font-family: var(--font-serif);
+    font-size: 20px;
+    pointer-events: none;
+  }
   .croquis-card .eyebrow {
     margin-bottom: 12px;
   }

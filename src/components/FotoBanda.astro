@@ -1,0 +1,84 @@
+---
+// Foto del save the date a todo lo ancho, entre secciones. Se muestra en su proporción
+// (3:2) para no cortar rostros, con un paralaje muy leve y una sombra fina arriba y abajo.
+interface Props { src: string; alt: string; frase?: string; posicion?: string; }
+const { src, alt, frase, posicion = "center" } = Astro.props;
+---
+<div class="foto-banda" data-parallax>
+  <img src={src} alt={alt} loading="lazy" decoding="async" style={`object-position:${posicion}`} />
+  {frase && <p><span>{frase}</span></p>}
+</div>
+
+<style>
+  .foto-banda {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    margin: 44px 0 0;
+    overflow: hidden;
+    background: var(--color-sand);
+  }
+  .foto-banda img {
+    position: absolute;
+    left: 0;
+    top: -5%;
+    width: 100%;
+    height: 110%;
+    object-fit: cover;
+    transform: translate3d(0, var(--parallax, 0px), 0);
+    will-change: transform;
+  }
+  /* Solo una sombra sutil arriba y abajo */
+  .foto-banda::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow:
+      inset 0 10px 14px -12px rgba(33, 29, 23, 0.55),
+      inset 0 -10px 14px -12px rgba(33, 29, 23, 0.55);
+  }
+  .foto-banda p {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 44px 0 18px;
+    background: linear-gradient(transparent, rgba(20, 16, 12, 0.5));
+    text-align: center;
+  }
+  .foto-banda p span {
+    color: #fff;
+    font-family: var(--font-script);
+    font-size: 36px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  }
+</style>
+
+<script>
+  // Un solo listener para todas las bandas; el desplazamiento nunca supera el margen extra de la foto.
+  const app = document.getElementById("app");
+  const bandas = Array.from(document.querySelectorAll<HTMLElement>("[data-parallax]"));
+  const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (app && bandas.length && !quieto && !(window as any).__bandas) {
+    (window as any).__bandas = true;
+    let pending = false;
+    const update = () => {
+      pending = false;
+      const mid = app.getBoundingClientRect().top + app.clientHeight / 2;
+      bandas.forEach((b) => {
+        const r = b.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > window.innerHeight + 100) return;
+        const limit = r.height * 0.045;
+        const offset = Math.max(-limit, Math.min(limit, (r.top + r.height / 2 - mid) * -0.05));
+        b.style.setProperty("--parallax", offset.toFixed(1) + "px");
+      });
+    };
+    app.addEventListener("scroll", () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  }
+</script>

@@ -59,6 +59,16 @@ const shareImage = siteUrl + "/og-boda.png?v=3";
     />
   </head>
   <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="goldStroke" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
+          <stop offset="0" stop-color="#8a6629"></stop>
+          <stop offset=".45" stop-color="#d2ae63"></stop>
+          <stop offset=".62" stop-color="#b08a45"></stop>
+          <stop offset="1" stop-color="#7a5822"></stop>
+        </linearGradient>
+      </defs>
+    </svg>
     <div id="frame">
       <slot name="overlay" />
       <div id="app">
@@ -109,7 +119,7 @@ const shareImage = siteUrl + "/og-boda.png?v=3";
       // Además de cada bloque, sus tarjetas/fotos/renglones entran uno tras otro.
       const itemTargets = Array.from(
         document.querySelectorAll<HTMLElement>(
-          "#app .landing-section :is(.ecard, .venue, .card, .tl .it, .gallery-item, .gallery-feature, .registry, .copyrow, .story-photo, .std, .notice, .date-card, .music-card, .weather-card, .cd-night, .thanks)"
+          "#app .landing-section :is(.ecard, .venue, .card, .tl .it, .gallery-item, .gallery-feature, .registry, .copyrow, .story-photo, .std, .notice, .date-card, .music-card, .weather-card, .cd-night, .thanks), #app > .foto-banda"
         )
       ).filter((el) => !el.classList.contains("reveal"));
       const itemObserver = "IntersectionObserver" in window
@@ -127,7 +137,18 @@ const shareImage = siteUrl + "/og-boda.png?v=3";
             { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
           )
         : null;
-      itemTargets.forEach((el) => el.classList.add("reveal-item"));
+      // Tarjetas tipo sobre. Cada una elige su animación con data-letter:
+      //  seal: la solapa se cierra y se estampa el sello (por defecto)
+      //  open: el sello se rompe, la solapa se abre y la tarjeta sale del sobre
+      //  drop: el sobre cae suavemente, ladeado, y luego se sella
+      // La confirmación (#rsvp-box) se dibuja con JS y anima su propia tarjeta.
+      itemTargets.forEach((el) => {
+        el.classList.add("reveal-item");
+        if (!el.matches(".card, .venue") || el.closest("#rsvp-box")) return;
+        const variant = el.dataset.letter || "seal";
+        el.classList.add("letter", "v-" + variant);
+        if (variant === "open") el.insertAdjacentHTML("beforeend", '<span class="env-pocket" aria-hidden="true"></span>');
+      });
 
       function startReveals() {
         if (revealsStarted) return;

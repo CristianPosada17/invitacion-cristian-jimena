@@ -150,7 +150,31 @@ import Ornament from "./Ornament.astro";
     }
   }
 
+  // La tarjeta de confirmación se abre como sobre cuando el invitado llega a ella.
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let letterObserver: IntersectionObserver | null = null;
+  function animateLetter() {
+    const card = box?.querySelector<HTMLElement>(".card");
+    if (!card) return;
+    card.classList.add("letter", "v-open");
+    if (reduceMotion || !("IntersectionObserver" in window)) return;
+    card.classList.add("reveal-item");
+    card.insertAdjacentHTML("beforeend", '<span class="env-pocket" aria-hidden="true"></span>');
+    letterObserver?.disconnect();
+    letterObserver = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      card.classList.add("is-visible");
+      letterObserver?.disconnect();
+    }, { threshold: 0.15 });
+    letterObserver.observe(card);
+  }
+
   function render() {
+    renderBox();
+    animateLetter();
+  }
+
+  function renderBox() {
     if (!box) return;
     const token = getToken();
     const guest = state?.guest;
@@ -200,7 +224,7 @@ import Ornament from "./Ornament.astro";
       '<div class="rsvp-kicker">Te esperamos</div>' +
       '<div class="sec-title">Confirma tu Asistencia</div>' +
       '<div class="sec-sub mb">Tienes ' + (guest.max_pases || 0) + " " + ((guest.max_pases || 0) > 1 ? "pases" : "pase") + " reservados</div>" +
-      '<div class="card mt rsvp-card"><label class="f">Invitación para</label><input class="t" value="' + esc(guest.nombre) + '" disabled>' +
+      '<div class="card mt rsvp-card letter"><label class="f">Invitación para</label><input class="t" value="' + esc(guest.nombre) + '" disabled>' +
       '<div class="mt"><label class="f">Teléfono o correo</label><input class="t" id="f-tel" placeholder="Tu teléfono o correo"></div>' +
       '<div class="mt"><label class="f">Número de pases (máx. ' + (guest.max_pases || 1) + ')</label><select class="t" id="f-pases">' + opts + "</select></div>" +
       '<div class="mt"><label class="f">¿Asistirás?</label><div class="toggle"><button id="a-si" class="on">Sí, asistiré</button><button id="a-no">No podré</button></div></div></div>' +

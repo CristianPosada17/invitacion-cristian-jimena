@@ -7,7 +7,7 @@ import Countdown from "../components/Countdown.astro";
 import Rsvp from "../components/Rsvp.astro";
 import InformacionImportante from "../components/InformacionImportante.astro";
 import Contacto from "../components/Contacto.astro";
-import Historia from "../components/Historia.astro";
+import FotoBanda from "../components/FotoBanda.astro";
 import Regalos from "../components/Regalos.astro";
 import Musica from "../components/Musica.astro";
 import TuInvitacion from "../components/TuInvitacion.astro";
@@ -25,19 +25,22 @@ import Weather from "../components/Weather.astro";
   <Blessing />
   <section id="contador" class="landing-section"><Countdown /></section>
   <section id="confirmacion" class="landing-section"><Rsvp /></section>
+  <FotoBanda src="/galeria/jc-09.jpg" alt="Jimena y Cristian abrazados frente al escenario" frase="Nuestro gran día" />
   <section id="detalles" class="landing-section">
     <Detalles />
     <Itinerario />
     <Ubicaciones />
   </section>
   <section id="pase" class="landing-section"><TuInvitacion /></section>
+  <FotoBanda src="/galeria/jc-13.jpg" alt="Jimena y Cristian sonriendo juntos" posicion="center 25%" />
   <section id="informacion" class="landing-section"><InformacionImportante /></section>
-  <section id="fotos" class="landing-section"><Historia /></section>
   <section id="galeria" class="landing-section"><Galeria /></section>
   <section id="regalos" class="landing-section"><Regalos /></section>
-  <section id="musica" class="landing-section"><Musica /></section>
+  <FotoBanda src="/galeria/jc-19.jpg" alt="Jimena y Cristian abrazados en la calle" posicion="center 30%" />
   <section id="clima" class="landing-section"><Weather /></section>
+  <section id="musica" class="landing-section"><Musica /></section>
   <section id="contacto" class="landing-section"><Contacto /></section>
+  <FotoBanda src="/galeria/jc-20.jpg" alt="Jimena y Cristian juntos bajo los árboles" posicion="center 40%" />
   <section id="seccion-album" class="landing-section"><Album /></section>
   <div style="height:10px"></div>
 </Layout>

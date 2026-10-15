@@ -1,8 +1,14 @@
 ---
 import Ornament from "./Ornament.astro";
-interface Props { title: string; sub?: string; }
-const { title, sub } = Astro.props;
+import { icon as svgIcon } from "../lib/icons";
+// Con `icon` se muestra un medallón dorado con el ícono de la sección en lugar del adorno.
+interface Props { title: string; sub?: string; icon?: string; }
+const { title, sub, icon } = Astro.props;
 ---
-<Ornament />
+{icon ? (
+  <div class="sec-badge" aria-hidden="true"><span set:html={svgIcon(icon)}></span></div>
+) : (
+  <Ornament />
+)}
 <div class={`sec-title ${sub ? "" : "mb"}`}>{title}</div>
 {sub && <div class="sec-sub mb">{sub}</div>}

@@ -9,6 +9,7 @@ const sedes = [
   {
     icono: "church",
     nombre: "Templo de Fátima",
+    animacion: "seal",
     mapas: {
       google: "https://www.google.com/maps/search/?api=1&query=" + q("Templo de Fátima, Durango, Dgo."),
       apple: "https://maps.apple.com/?q=" + q("Templo de Fátima, Durango, Dgo."),
@@ -19,6 +20,7 @@ const sedes = [
   {
     icono: "cheers",
     nombre: "Salón Casa Meraki",
+    animacion: "open",
     // Ubicación exacta del salón (link compartido por los novios).
     mapas: {
       google: "https://maps.app.goo.gl/zRbWCMWQZYUAJLxd6",
@@ -33,7 +35,7 @@ const sedes = [
 ];
 ---
 <div class="wrap">
-  <SectionTitle title="El Gran Día" />
+  <SectionTitle icon="cal" title="El Gran Día" />
 
   <div class="date-card">
     <span class="date-side">Sábado</span>
@@ -46,7 +48,7 @@ const sedes = [
   </div>
 
   {sedes.map((sede) => (
-    <div class="venue">
+    <div class="venue" data-letter={sede.animacion}>
       <div class="venue-head">
         <div class="venue-ic" set:html={icon(sede.icono)}></div>
         <h3>{sede.nombre}</h3>
@@ -260,12 +262,17 @@ const sedes = [
   .venue-ic {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: 34px;
+    height: 38px;
     flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--color-champ-l);
+    padding-right: 13px;
+    border-right: 1px solid var(--color-line);
     color: var(--color-gold-d);
+  }
+  .venue-ic :global(.svic) {
+    width: 30px;
+    height: 30px;
+    stroke-width: 1.1;
   }
   .venue h3 {
     margin: 0;

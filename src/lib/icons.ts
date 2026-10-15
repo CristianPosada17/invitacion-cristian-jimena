@@ -21,6 +21,13 @@ export const ICONS: Record<string, string> = {
   heartFill: '<path d="M12 21s-7-4.5-7-9a4 4 0 018-1 4 4 0 018 1c0 4.5-7 9-7 9z"/>',
   albumIcon: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
+  rings: '<circle cx="9" cy="14.5" r="5"/><circle cx="15" cy="14.5" r="5"/><path d="M10.5 5.5L12 3.5l1.5 2L12 7.5z"/>',
+  dinner: '<path d="M7 3v6a2 2 0 002 2v10M5 3v5M9 3v5"/><path d="M17 3c-2.2 2-2.2 6.5 0 8.5V21"/>',
+  heart: '<path d="M12 20s-7-4.4-7-9.6A3.9 3.9 0 0112 8a3.9 3.9 0 017 2.4C19 15.6 12 20 12 20z"/>',
+  sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10.5l5-3v9l-5-3z"/>',
 };
 
 export function icon(name: string, cls = ""): string {

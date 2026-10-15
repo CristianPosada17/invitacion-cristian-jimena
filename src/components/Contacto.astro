@@ -4,8 +4,8 @@ import { icon } from "../lib/icons";
 ---
 
 <div class="wrap">
-  <SectionTitle title="Contacto" />
-  <div class="card">
+  <SectionTitle icon="phone" title="Contacto" />
+  <div class="card" data-letter="drop">
     <div class="dcard">
       <div class="ic" set:html={icon("phone")}></div>
       <div class="tx">
@@ -14,7 +14,7 @@ import { icon } from "../lib/icons";
       </div>
     </div>
   </div>
-  <div class="card" data-install-card>
+  <div class="card" data-install-card data-letter="open">
     <div class="dcard" style="padding-bottom:14px">
       <div class="ic" set:html={icon("plus")}></div>
       <div class="tx">
