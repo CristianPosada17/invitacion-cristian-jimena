@@ -21,18 +21,18 @@ export const WEATHER_LOCATION = {
 export const WEDDING = new Date("2027-04-03T17:00:00-06:00");
 export const REVEAL_DAYS_DEFAULT = 15;
 
-// El token del link personalizado (?g=...). Se guarda en el dispositivo (localStorage)
-// para que la identidad del invitado no se pierda al navegar ni al abrir la app instalada,
-// que arranca sin los parámetros del link.
+// El token del link personalizado (?g=...). Se guarda en el dispositivo para que la
+// app instalada (que puede arrancar sin los parámetros del link) siga reconociendo al
+// invitado. En el navegador solo cuenta el link abierto: el link general (sin ?g=)
+// siempre muestra la invitación genérica, aunque antes se haya abierto otro link.
 function remember(key: string, value: string) {
-  try { sessionStorage.setItem(key, value); } catch (e) {}
   try { localStorage.setItem(key, value); } catch (e) {}
 }
+function isInstalledApp(): boolean {
+  return window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+}
 function recall(key: string): string {
-  try {
-    const v = sessionStorage.getItem(key);
-    if (v) return v;
-  } catch (e) {}
+  if (!isInstalledApp()) return "";
   try { return localStorage.getItem(key) || ""; } catch (e) { return ""; }
 }
 
