@@ -6,7 +6,7 @@
 //  · iPhone/Safari: Compartir → "Agregar a inicio".
 //  · Abierta dentro de WhatsApp: primero abrirla en Safari o Chrome (nota en cada pestaña).
 //  Hay pestañas iPhone / Android; se abre la del teléfono detectado.
-// También se puede abrir desde cualquier botón con [data-install-open].
+// No aparece sola: se abre desde cualquier botón con [data-install-open].
 const shareIcon =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>';
 const plusIcon =
@@ -312,18 +312,10 @@ const compassIcon =
 
   const sheet = document.getElementById("installSheet");
   const ua = navigator.userAgent;
-  const isIOS = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
   const isAndroid = /android/i.test(ua);
   const standalone =
     window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
   let deferred: any = null;
-
-  function read(key: string) {
-    try { return localStorage.getItem(key); } catch (e) { return null; }
-  }
-  function write(key: string, value: string) {
-    try { localStorage.setItem(key, value); } catch (e) {}
-  }
 
   function showTab(tab: string) {
     sheet?.querySelectorAll<HTMLElement>("[data-tab]").forEach((el) => {
@@ -352,56 +344,21 @@ const compassIcon =
     sheet?.setAttribute("aria-hidden", "true");
   }
 
-  // Aparece sola en cuanto se abre la invitación (justo después del sobre), solo en celulares.
-  // "Ya la guardé" la apaga para siempre; "Ahora no" solo por esta visita.
-  function shouldAutoOpen() {
-    if (standalone || !(isIOS || isAndroid)) return false;
-    if (read("pwa-dismissed") === "1") return false;
-    try {
-      return sessionStorage.getItem("pwa-snooze") !== "1";
-    } catch (e) {
-      return true;
-    }
-  }
-  function scheduleAutoOpen() {
-    if (!shouldAutoOpen()) return;
-    window.setTimeout(() => {
-      if (!sheet?.classList.contains("show")) open();
-    }, 900);
-  }
-  if (document.getElementById("intro")) {
-    document.body.addEventListener("intro:done", scheduleAutoOpen, { once: true });
-  } else {
-    scheduleAutoOpen();
-  }
-
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferred = event;
   });
-  window.addEventListener("appinstalled", () => {
-    write("pwa-dismissed", "1");
-    close();
-  });
+  window.addEventListener("appinstalled", close);
 
   document.getElementById("installNow")?.addEventListener("click", async () => {
     if (!deferred) return;
     deferred.prompt();
-    const choice = await deferred.userChoice;
+    await deferred.userChoice;
     deferred = null;
-    if (choice?.outcome === "accepted") write("pwa-dismissed", "1");
     close();
   });
-  document.getElementById("installLater")?.addEventListener("click", () => {
-    try {
-      sessionStorage.setItem("pwa-snooze", "1");
-    } catch (e) {}
-    close();
-  });
-  document.getElementById("installDone")?.addEventListener("click", () => {
-    write("pwa-dismissed", "1");
-    close();
-  });
+  document.getElementById("installLater")?.addEventListener("click", close);
+  document.getElementById("installDone")?.addEventListener("click", close);
   sheet?.querySelectorAll("[data-install-close]").forEach((el) => el.addEventListener("click", close));
 
   // Botones en la invitación que abren la guía a petición.
