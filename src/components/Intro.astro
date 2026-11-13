@@ -106,10 +106,34 @@ const florets: { x: number; y: number; r: number }[] = [];
   <!-- Solapa inferior con el nombre del invitado escrito a mano -->
   <div class="flap flap-bottom">
     <div class="paper" aria-hidden="true"></div>
-    <div class="env-to">
+    <div class="env-to" id="introGuestTo">
       <span id="introGuestLabel">Una invitación</span>
       <strong id="introGuestName">especialmente para ti</strong>
     </div>
+    <script is:inline>
+      // Escribe el nombre del link (?n=) antes del primer cuadro para que no se vea la frase
+      // genérica. Misma lógica que getGuestNameHint() en config.ts.
+      (function () {
+        var q = new URLSearchParams(location.search);
+        var standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+        var token = q.get("g") || "";
+        try { if (!token && standalone) token = localStorage.getItem("g") || ""; } catch (e) {}
+        if (!token) return;
+        var name = q.get("g") ? q.get("n") || "" : "";
+        try { if (!name && standalone) name = localStorage.getItem("guest_name:" + token) || ""; } catch (e) {}
+        var to = document.getElementById("introGuestTo");
+        if (!name) {
+          // Link sin nombre: se oculta hasta que responda Google Sheets.
+          to.classList.add("pending");
+          return;
+        }
+        var el = document.getElementById("introGuestName");
+        document.getElementById("introGuestLabel").textContent = "Para";
+        el.textContent = name;
+        el.classList.toggle("long", name.length > 18 && name.length <= 28);
+        el.classList.toggle("xlong", name.length > 28);
+      })();
+    </script>
   </div>
 
   <!-- Solapa superior con los nombres de los novios -->
@@ -288,6 +312,10 @@ const florets: { x: number; y: number; r: number }[] = [];
     top: 69%;
     text-align: center;
     color: #4b3a24;
+    transition: opacity 0.35s ease;
+  }
+  .env-to.pending {
+    opacity: 0;
   }
   .env-to span {
     display: block;
@@ -528,9 +556,11 @@ const florets: { x: number; y: number; r: number }[] = [];
   }
 
   loadGuest().then(({ guest }) => {
-    if (!guest?.nombre) return;
-    if (labelEl) labelEl.textContent = "Para";
-    setGuestName([guest.prot, guest.nombre].filter(Boolean).join(" "));
+    if (guest?.nombre) {
+      if (labelEl) labelEl.textContent = "Para";
+      setGuestName([guest.prot, guest.nombre].filter(Boolean).join(" "));
+    }
+    document.getElementById("introGuestTo")?.classList.remove("pending");
   });
 
   function startWeddingMusic() {
