@@ -62,6 +62,12 @@ export function getGuestNameHint(): string {
   return recall(key);
 }
 
+// WhatsApp de contacto (número con lada de país, sin "+" ni espacios).
+export const CONTACTOS = [
+  { nombre: "Jimena", whatsapp: "526183260661" },
+  { nombre: "Cristian", whatsapp: "526182302938" },
+];
+
 // Mesas de regalos. Pega aquí cada link cuando esté listo (también se puede poner
 // en el Apps Script como SEARS_URL / LIVERPOOL_URL); mientras esté vacío se muestra "Próximamente".
 export const MESAS_REGALOS = [

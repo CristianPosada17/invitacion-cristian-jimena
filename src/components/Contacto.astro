@@ -1,6 +1,7 @@
 ---
 import SectionTitle from "./SectionTitle.astro";
 import { icon } from "../lib/icons";
+import { CONTACTOS } from "../lib/config";
 ---
 
 <div class="wrap">
@@ -12,6 +13,14 @@ import { icon } from "../lib/icons";
         <b>¿Tienes alguna duda?</b>
         <span>Escríbenos por WhatsApp</span>
       </div>
+    </div>
+    <div class="wa">
+      {CONTACTOS.map((c) => (
+        <a class="btn ghost" href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener">
+          <Fragment set:html={icon("phone")} />
+          {c.nombre}
+        </a>
+      ))}
     </div>
   </div>
   <div class="card" data-install-card data-letter="open">
@@ -26,3 +35,15 @@ import { icon } from "../lib/icons";
   </div>
   <div style="height:20px"></div>
 </div>
+
+<style>
+  .wa {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .wa .btn {
+    text-decoration: none;
+  }
+</style>
